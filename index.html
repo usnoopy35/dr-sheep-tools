@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>生長評估小幫手 | 下班後的某宅羊</title>
+    <style>
+        :root {
+            /* 馬卡龍色系 */
+            --primary: #64B5F6;    /* 柔和藍 */
+            --primary-dark: #42A5F5;
+            --secondary: #81C784;  /* 薄荷綠 */
+            --accent: #FFD54F;     /* 暖陽黃 */
+            --danger: #FF8A80;     /* 柔和紅 */
+            --text-main: #546E7A;  /* 深灰藍字體，比純黑不刺眼 */
+            --text-light: #90A4AE;
+            --bg-body: #F7F9FC;
+            --card-shadow: 0 8px 24px rgba(149, 157, 165, 0.15);
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: "jf-openhuninn", "PingFang TC", "Microsoft JhengHei", sans-serif; /* 嘗試使用圓體，若無則退回黑體 */
+            background-color: var(--bg-body);
+            background-image: radial-gradient(#E3F2FD 2px, transparent 2px);
+            background-size: 24px 24px; /* 點點背景 */
+            margin: 0;
+            padding: 20px 15px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            color: var(--text-main);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 460px;
+            background: white;
+            border-radius: 24px;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 30px;
+            border: 1px solid white;
+        }
+
+        /* --- Header --- */
+        .header-link {
+            background: linear-gradient(135deg, #fff 0%, #fbfbfb 100%);
+            padding: 18px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid #eee;
+        }
+        .header-link:active { transform: scale(0.99); }
+        .brand-icon { font-size: 1.5rem; margin-right: 8px; }
+        .brand-name {
+            font-size: 1.1rem; font-weight: 800; color: #37474F; letter-spacing: 0.5px;
+        }
+        .fb-badge {
+            font-size: 0.7rem; background: #1877F2; color: white; 
+            padding: 2px 6px; border-radius: 4px; margin-left: 6px; font-weight: bold;
+        }
+
+        /* --- Tabs --- */
+        .tabs { 
+            display: flex; 
+            padding: 6px; 
+            background: #F0F4F8; 
+            margin: 15px; 
+            border-radius: 16px; 
+        }
+        .tab-btn {
+            flex: 1; 
+            padding: 10px; 
+            border: none; 
+            background: transparent;
+            font-size: 0.95rem; 
+            font-weight: bold; 
+            color: var(--text-light);
+            cursor: pointer; 
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+        .tab-btn.active { 
+            background: white; 
+            color: var(--primary); 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .tab-btn.active.growth-tab { color: var(--secondary); }
+
+        /* --- Content & Inputs --- */
+        .content { padding: 0 20px 25px 20px; animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .hidden { display: none; }
+
+        h2 { text-align: center; color: var(--text-main); font-size: 1.3rem; margin: 5px 0 20px 0; font-weight: 800; }
+        
+        .input-group { margin-bottom: 16px; }
+        label { display: block; margin-bottom: 6px; font-weight: bold; font-size: 0.95rem; color: var(--text-main); }
+        
+        input, select {
+            width: 100%; padding: 14px; 
+            border: 2px solid #EEF2F6; 
+            border-radius: 12px;
+            font-size: 1rem; color: #444; background: #FAFAFA;
+            transition: all 0.2s; -webkit-appearance: none;
+        }
+        input:focus { 
+            outline: none; background: white; border-color: var(--primary); 
+            box-shadow: 0 0 0 3px rgba(100, 181, 246, 0.2);
+        }
+
+        /* Date Group */
+        .date-box {
+            background: #F8FAFC; border: 2px solid #EEF2F6; border-radius: 12px; padding: 12px;
+        }
+        .tw-date-row { display: flex; align-items: center; gap: 4px; margin-top: 8px; }
+        .tw-date-row input { text-align: center; padding: 8px; background: white; }
+        .sub-label { font-size: 0.85rem; color: #90A4AE; margin-right: 4px; }
+
+        /* Radio Group */
+        .radio-group { display: flex; gap: 12px; }
+        .radio-label { 
+            flex: 1; padding: 12px; 
+            border: 2px solid #EEF2F6; border-radius: 12px; 
+            text-align: center; cursor: pointer; transition: 0.2s;
+            font-weight: bold; color: var(--text-light);
+            background: #FAFAFA;
+        }
+        input[type="radio"] { display: none; }
+        /* Boy Active */
+        input[value="boy"]:checked + .radio-label {
+            background-color: #E3F2FD; border-color: var(--primary); color: var(--primary-dark);
+        }
+        /* Girl Active */
+        input[value="girl"]:checked + .radio-label {
+            background-color: #FCE4EC; border-color: #F06292; color: #D81B60;
+        }
+
+        /* Buttons */
+        .btn {
+            width: 100%; padding: 16px; border: none; border-radius: 14px;
+            font-size: 1.1rem; color: white; font-weight: 800; 
+            cursor: pointer; margin-top: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: transform 0.1s, box-shadow 0.1s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn:active { transform: scale(0.98); box-shadow: none; }
+        
+        .btn-growth { background: linear-gradient(135deg, #81C784 0%, #66BB6A 100%); }
+        .btn-target { background: linear-gradient(135deg, #64B5F6 0%, #42A5F5 100%); }
+        
+        .btn-outline {
+            background: white; border: 2px dashed #B0BEC5; color: #78909C;
+            margin-top: 15px; padding: 12px; font-size: 0.95rem; box-shadow: none;
+        }
+        .btn-outline:active { background: #ECEFF1; }
+
+        /* --- Result Card --- */
+        .result-box {
+            margin-top: 25px; padding: 20px; 
+            background-color: #FFF; 
+            border: 2px solid #EEF2F6;
+            border-radius: 16px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            display: none;
+            position: relative;
+        }
+        .result-box::before {
+            content: '✨'; position: absolute; top: -15px; left: 50%; transform: translateX(-50%);
+            font-size: 24px; background: white; padding: 0 10px;
+        }
+
+        /* --- Visual Bar --- */
+        .visual-bar-container {
+            position: relative; height: 16px; border-radius: 8px;
+            background: linear-gradient(90deg, #FFCDD2 0%, #FFF9C4 15%, #C8E6C9 15%, #C8E6C9 85%, #FFF9C4 85%, #FFCDD2 100%);
+            margin: 10px 0 5px 0;
+        }
+        .visual-marker {
+            position: absolute; top: -4px; width: 12px; height: 24px;
+            background: #455A64; border: 2px solid white; border-radius: 6px;
+            transform: translateX(-50%); transition: left 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .bar-labels {
+            display: flex; justify-content: space-between; font-size: 0.7rem; color: #B0BEC5; margin-bottom: 12px;
+        }
+
+        /* Table */
+        .ref-table { width: 100%; border-collapse: collapse; margin-top: 5px; }
+        .ref-table td { padding: 6px 2px; vertical-align: bottom; }
+        .val-big { font-size: 1.4rem; font-weight: 800; color: #37474F; line-height: 1; }
+        .val-unit { font-size: 0.9rem; color: #90A4AE; margin-left: 2px; font-weight: normal; }
+        .label-text { font-size: 0.9rem; color: #78909C; font-weight: bold; }
+        .ref-small { font-size: 0.75rem; color: #B0BEC5; float: right; }
+
+        /* Tags */
+        .status-tag {
+            font-size: 0.75rem; padding: 3px 8px; border-radius: 20px; margin-left: 6px; 
+            color: white; font-weight: bold; vertical-align: middle;
+        }
+        .st-normal { background: var(--secondary); }
+        .st-warn { background: var(--accent); }
+        .st-danger { background: var(--danger); }
+
+        .warning {
+            margin-top: 15px; font-size: 0.8rem; color: #90A4AE; line-height: 1.4;
+            background: #F8FAFC; padding: 12px; border-radius: 12px;
+        }
+        
+        .result-header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;
+            padding-bottom: 10px; border-bottom: 2px dashed #EEF2F6;
+        }
+        .age-badge { background: #E3F2FD; color: #1976D2; padding: 4px 10px; border-radius: 8px; font-weight: bold; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <a href="https://www.facebook.com/profile.php?id=61584059466555" target="_blank" class="header-link">
+        <span class="brand-icon">🐑</span>
+        <span class="brand-name">下班後的某宅羊</span>
+        <span class="fb-badge">FB</span>
+    </a>
+
+    <div class="tabs">
+        <button class="tab-btn active growth-tab" onclick="switchTab('growth')">📏 生長評估</button>
+        <button class="tab-btn" onclick="switchTab('target')">👨‍👩‍👧 預測身高</button>
+    </div>
+
+    <div id="growth" class="content">
+        <div class="input-group radio-group">
+            <label style="flex:1;">
+                <input type="radio" name="gender" value="boy" checked>
+                <div class="radio-label">👦 男生</div>
+            </label>
+            <label style="flex:1;">
+                <input type="radio" name="gender" value="girl">
+                <div class="radio-label">👧 女生</div>
+            </label>
+        </div>
+
+        <div class="input-group">
+            <label>🎂 出生年月日</label>
+            <div class="date-box">
+                <input type="date" id="birthday" onchange="syncToMinguo()" style="background:white;">
+                <div class="tw-date-row">
+                    <span class="sub-label">民國</span>
+                    <input type="number" id="tw-year" placeholder="112" style="flex:1" onkeyup="syncToWestern()">
+                    <span class="sub-label">年</span>
+                    <input type="number" id="tw-month" placeholder="5" style="width:45px" onkeyup="syncToWestern()">
+                    <span class="sub-label">月</span>
+                    <input type="number" id="tw-day" placeholder="20" style="width:45px" onkeyup="syncToWestern()">
+                    <span class="sub-label">日</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-group" style="display:flex; gap:12px;">
+            <div style="flex:1;">
+                <label>📏 身高 (cm)</label>
+                <input type="number" id="height" placeholder="125">
+            </div>
+            <div style="flex:1;">
+                <label>⚖️ 體重 (kg)</label>
+                <input type="number" id="growth-weight" placeholder="25">
+            </div>
+        </div>
+
+        <button class="btn btn-growth" onclick="calculateGrowth()">
+            <span>開始分析</span>
+        </button>
+
+        <div id="growth-result" class="result-box">
+            <div class="result-header">
+                <div class="age-badge" id="age-display"></div>
+                <div style="font-size:0.8rem; color:#aaa;">對照: <span id="ref-age-label"></span></div>
+            </div>
+
+            <table class="ref-table">
+                <tr>
+                    <td class="label-text">身高</td>
+                    <td align="right">
+                        <span class="val-big" id="h-val"></span><span class="val-unit">cm</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <div class="visual-bar-container">
+                            <div class="visual-marker" id="h-marker" style="left:50%"></div>
+                        </div>
+                        <div class="bar-labels">
+                            <span>3%</span><span>50%</span><span>97%</span>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="label-text" style="padding-top:10px;">體重</td>
+                    <td align="right" style="padding-top:10px;">
+                        <span class="val-big" id="w-val"></span><span class="val-unit">kg</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <div class="visual-bar-container">
+                            <div class="visual-marker" id="w-marker" style="left:50%"></div>
+                        </div>
+                        <div class="bar-labels">
+                            <span>3%</span><span>50%</span><span>97%</span>
+                        </div>
+                    </td>
+                </tr>
+                
+                <tr>
+                    <td class="label-text" style="padding-top:15px; border-top:2px dashed #eee;">BMI</td>
+                    <td align="right" style="padding-top:15px; border-top:2px dashed #eee;">
+                         <span class="val-big" id="bmi-display"></span>
+                         <span id="bmi-status" class="status-tag" style="display:none;"></span>
+                    </td>
+                </tr>
+            </table>
+
+            <button class="btn btn-outline" onclick="copyResult()">📋 複製摘要 (Copy)</button>
+        </div>
+
+        <div class="warning">
+            💡 <strong>小提醒：</strong><br>
+            光譜條綠色區段代表 15%~85% 的理想範圍。<br>
+            一歲以下採用 WHO 逐月標準。
+        </div>
+    </div>
+
+    <div id="target" class="content hidden">
+        <div class="input-group radio-group">
+            <label style="flex:1;">
+                <input type="radio" name="child-gender" value="boy" checked>
+                <div class="radio-label">👦 男生</div>
+            </label>
+            <label style="flex:1;">
+                <input type="radio" name="child-gender" value="girl">
+                <div class="radio-label">👧 女生</div>
+            </label>
+        </div>
+
+        <div class="input-group">
+            <label>👨 父親身高 (cm)</label>
+            <input type="number" id="father-h" placeholder="175">
+        </div>
+        <div class="input-group">
+            <label>👩 母親身高 (cm)</label>
+            <input type="number" id="mother-h" placeholder="160">
+        </div>
+
+        <button class="btn btn-target" onclick="calculateTarget()">
+            <span>計算預測身高</span>
+        </button>
+
+        <div id="target-result" class="result-box" style="text-align:center;">
+            <div style="font-size:0.9rem; color:#90A4AE;">🎯 預測目標身高</div>
+            <div style="font-size:2.8rem; font-weight:800; color:var(--primary); margin:10px 0; line-height:1;">
+                <span id="target-val">0</span><span style="font-size:1rem; color:#90A4AE; font-weight:normal; margin-left:5px;">cm</span>
+            </div>
+            <div style="display:inline-block; background:#E3F2FD; color:#1976D2; padding:8px 15px; border-radius:20px; font-weight:bold; font-size:0.9rem;">
+                區間：<span id="target-range"></span>
+            </div>
+        </div>
+        
+        <div class="warning">
+            🧬 <strong>遺傳公式：</strong>(父+母 ± 13) / 2。<br>
+            後天營養、睡眠與運動皆會影響最終身高喔！
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- Logic is preserved exactly from V1.1 ---
+    function switchTab(tabId) {
+        document.getElementById('growth').classList.add('hidden');
+        document.getElementById('target').classList.add('hidden');
+        document.getElementById(tabId).classList.remove('hidden');
+        
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        // Find button index
+        if(tabId==='growth') document.querySelector('.tabs button:nth-child(1)').classList.add('active');
+        else document.querySelector('.tabs button:nth-child(2)').classList.add('active');
+    }
+
+    function syncToMinguo() {
+        const westernDate = document.getElementById('birthday').value;
+        if (!westernDate) return;
+        const [y, m, d] = westernDate.split('-');
+        document.getElementById('tw-year').value = parseInt(y) - 1911;
+        document.getElementById('tw-month').value = parseInt(m);
+        document.getElementById('tw-day').value = parseInt(d);
+    }
+    function syncToWestern() {
+        const twY = parseInt(document.getElementById('tw-year').value);
+        const twM = parseInt(document.getElementById('tw-month').value);
+        const twD = parseInt(document.getElementById('tw-day').value);
+        if (twY && twM && twD) {
+            const westY = twY + 1911;
+            document.getElementById('birthday').value = `${westY}-${twM.toString().padStart(2, '0')}-${twD.toString().padStart(2, '0')}`;
+        }
+    }
+
+    function calculateTarget() {
+        const f = parseFloat(document.getElementById('father-h').value);
+        const m = parseFloat(document.getElementById('mother-h').value);
+        const gender = document.querySelector('input[name="child-gender"]:checked').value;
+        const resultBox = document.getElementById('target-result');
+        if (!f || !m) { alert("請輸入父母身高"); return; }
+        let target = (gender === 'boy') ? (f + m + 13) / 2 : (f + m - 13) / 2;
+        target = Math.round(target * 10) / 10;
+        document.getElementById('target-val').textContent = target;
+        document.getElementById('target-range').textContent = `${target - 7.5} ~ ${target + 7.5} cm`;
+        resultBox.style.display = 'block';
+    }
+
+    const growthData = {
+        boy: {
+            infant: { 0:{h:[46.1,49.9,53.7],w:[2.5,3.3,4.4]}, 1:{h:[51.1,54.7,58.4],w:[3.4,4.5,5.8]}, 2:{h:[54.4,58.4,62.4],w:[4.3,5.6,7.1]}, 3:{h:[57.3,61.4,65.5],w:[5.0,6.4,8.0]}, 4:{h:[59.7,63.9,68.0],w:[5.6,7.0,8.7]}, 5:{h:[61.7,65.9,70.1],w:[6.0,7.5,9.3]}, 6:{h:[63.3,67.6,71.9],w:[6.4,7.9,9.8]}, 7:{h:[64.8,69.2,73.5],w:[6.7,8.3,10.3]}, 8:{h:[66.2,70.6,75.0],w:[6.9,8.6,10.7]}, 9:{h:[67.5,72.0,76.5],w:[7.1,8.9,11.0]}, 10:{h:[68.7,73.3,77.9],w:[7.4,9.2,11.4]}, 11:{h:[69.9,74.5,79.2],w:[7.6,9.4,11.7]}, 12:{h:[71.0,75.7,80.5],w:[7.7,9.6,12.0]} },
+            child: { "1.5":{h:[76.9,82.3,87.7],w:[8.8,10.9,13.7]}, "2":{h:[81.0,87.8,93.2],w:[9.7,12.2,15.3]}, "2.5":{h:[85.1,91.9,98.7],w:[10.5,13.3,16.9]}, "3":{h:[88.7,96.1,103.5],w:[11.3,14.3,18.3]}, "3.5":{h:[91.9,99.9,107.8],w:[12.0,15.3,19.7]}, "4":{h:[94.9,103.3,111.7],w:[12.7,16.3,21.2]}, "4.5":{h:[97.8,106.7,115.5],w:[13.4,17.3,22.7]}, "5":{h:[100.7,110.0,119.2],w:[14.1,18.3,24.2]}, "5.5":{h:[103.8,113.5,123.2],w:[14.9,19.4,25.8]}, "6":{h:[107.0,117.0,127.0],w:[15.9,20.5,27.5]}, "7":{h:[113,122,131],w:[17.7,22.9,30.7]}, "7.5":{h:[116,125,134],w:[18.6,24.0,32.8]}, "8":{h:[119,128,137],w:[19.5,25.4,35.5]}, "8.5":{h:[121,131,140],w:[20.5,26.9,38.0]}, "9":{h:[124,133,143],w:[21.5,28.1,40.5]}, "9.5":{h:[126,136,146],w:[22.6,29.7,43.0]}, "10":{h:[129,138,149],w:[23.7,31.2,45.6]}, "10.5":{h:[131,141,152],w:[24.9,32.9,48.3]}, "11":{h:[134,143,156],w:[26.2,34.9,51.5]}, "11.5":{h:[137,147,159],w:[27.6,37.0,55.0]}, "12":{h:[140,150,163],w:[29.1,39.2,59.0]}, "12.5":{h:[143,153,166],w:[30.8,41.8,63.0]}, "13":{h:[146,156,170],w:[32.8,44.4,67.5]}, "13.5":{h:[149,160,173],w:[35.0,47.3,71.5]}, "14":{h:[152,163,176],w:[37.2,50.1,75.6]}, "14.5":{h:[155,166,178],w:[39.6,52.8,79.0]}, "15":{h:[157,169,180],w:[41.9,55.4,82.0]}, "15.5":{h:[160,171,182],w:[44.2,57.7,84.5]}, "16":{h:[162,173,184],w:[46.3,59.7,86.5]}, "16.5":{h:[163,174,185],w:[48.1,61.3,88.0]}, "17":{h:[164,175,186],w:[49.7,62.7,89.5]}, "17.5":{h:[165,176,187],w:[51.0,63.8,90.5]}, "18":{h:[166,176,188],w:[52.0,64.6,91.5]} }
+        },
+        girl: {
+            infant: { 0: {h:[45.4,49.1,52.9],w:[2.4,3.2,4.2]}, 1:{h:[49.8,53.7,57.6],w:[3.2,4.2,5.5]}, 2:{h:[53.0,57.1,61.1],w:[3.9,5.1,6.6]}, 3:{h:[55.6,59.8,64.0],w:[4.5,5.8,7.5]}, 4:{h:[57.8,62.1,66.4],w:[5.0,6.4,8.2]}, 5:{h:[59.6,64.0,68.5],w:[5.4,6.9,8.8]}, 6:{h:[61.2,65.7,70.3],w:[5.7,7.3,9.3]}, 7:{h:[62.7,67.3,71.9],w:[6.0,7.6,9.8]}, 8:{h:[64.0,68.7,73.5],w:[6.3,7.9,10.2]}, 9:{h:[65.3,70.1,75.0],w:[6.5,8.2,10.5]}, 10:{h:[66.5,71.5,76.4],w:[6.7,8.5,10.9]}, 11:{h:[67.7,72.8,77.8],w:[6.9,8.7,11.2]}, 12:{h:[68.9,74.0,79.2],w:[7.0,8.9,11.5]} },
+            child: { "1.5":{h:[74.9,80.7,86.4],w:[8.1,10.2,13.2]}, "2":{h:[79.3,86.4,93.2],w:[9.0,11.5,14.8]}, "2.5":{h:[83.6,90.7,97.7],w:[10.0,12.7,16.5]}, "3":{h:[87.4,95.1,102.7],w:[10.8,13.9,18.1]}, "3.5":{h:[90.9,99.1,107.2],w:[11.6,15.0,19.8]}, "4":{h:[94.1,102.7,111.3],w:[12.3,16.1,21.5]}, "4.5":{h:[97.1,106.2,115.2],w:[13.0,17.2,23.2]}, "5":{h:[99.9,109.4,118.9],w:[13.7,18.2,24.9]}, "5.5":{h:[103.0,113.0,123.0],w:[14.6,19.3,26.2]}, "6":{h:[106.0,116.5,127.0],w:[15.5,20.4,27.9]}, "7":{h:[112,121,130],w:[17.4,22.4,30.0]}, "7.5":{h:[115,124,133],w:[18.3,23.6,32.5]}, "8":{h:[118,127,136],w:[19.2,25.0,35.5]}, "8.5":{h:[120,130,140],w:[20.3,26.6,38.5]}, "9":{h:[123,133,143],w:[21.5,28.4,42.0]}, "9.5":{h:[126,136,147],w:[22.7,30.5,45.0]}, "10":{h:[129,139,150],w:[24.1,32.5,48.5]}, "10.5":{h:[132,142,154],w:[25.7,34.7,52.0]}, "11":{h:[135,145,157],w:[27.4,37.0,56.0]}, "11.5":{h:[138,148,161],w:[29.3,39.5,60.0]}, "12":{h:[141,152,164],w:[31.4,42.0,63.5]}, "12.5":{h:[143,154,166],w:[33.5,44.5,66.5]}, "13":{h:[145,156,168],w:[35.6,46.8,69.0]}, "13.5":{h:[147,158,170],w:[37.6,48.8,71.5]}, "14":{h:[149,159,171],w:[39.3,50.6,73.5]}, "14.5":{h:[150,161,172],w:[40.9,52.1,75.0]}, "15":{h:[151,162,173],w:[42.1,53.4,76.5]}, "15.5":{h:[152,163,174],w:[44.2,57.7,84.5]}, "16":{h:[152,163,174],w:[43.9,55.2,78.5]}, "16.5":{h:[153,163,174],w:[44.5,55.9,79.5]}, "17":{h:[153,163,175],w:[45.0,56.4,80.0]}, "17.5":{h:[153,163,175],w:[45.3,56.7,80.5]}, "18":{h:[153,163,175],w:[45.5,56.9,81.0]} }
+        }
+    };
+    
+    const bmiCutoffs = {
+        boy: { 7:{ow:19.2,ob:20.3}, 8:{ow:19.8,ob:21.6}, 9:{ow:20.5,ob:22.7}, 10:{ow:21.2,ob:23.7}, 11:{ow:21.9,ob:24.6}, 12:{ow:22.6,ob:25.5}, 13:{ow:23.2,ob:26.4}, 14:{ow:23.8,ob:27.2}, 15:{ow:24.2,ob:28.0}, 16:{ow:24.6,ob:28.6}, 17:{ow:25.0,ob:29.2}, 18:{ow:25.2,ob:29.7} },
+        girl: { 7:{ow:18.4,ob:19.7}, 8:{ow:19.0,ob:20.6}, 9:{ow:19.7,ob:21.5}, 10:{ow:20.3,ob:22.3}, 11:{ow:21.0,ob:23.2}, 12:{ow:21.6,ob:24.0}, 13:{ow:22.2,ob:24.8}, 14:{ow:22.7,ob:25.6}, 15:{ow:23.1,ob:26.3}, 16:{ow:23.4,ob:26.9}, 17:{ow:23.7,ob:27.4}, 18:{ow:24.0,ob:27.8} }
+    };
+
+    let copyText = "";
+
+    function calculateGrowth() {
+        const h = parseFloat(document.getElementById('height').value);
+        const w = parseFloat(document.getElementById('growth-weight').value);
+        const bday = document.getElementById('birthday').value;
+        const gender = document.querySelector('input[name="gender"]:checked').value;
+
+        if (!h || !w || !bday) { alert("請輸入完整資料"); return; }
+
+        const today = new Date();
+        const birthDate = new Date(bday);
+        let totalMonths = (today.getFullYear() - birthDate.getFullYear()) * 12 + (today.getMonth() - birthDate.getMonth());
+        if (today.getDate() < birthDate.getDate()) totalMonths--;
+
+        let ageYearsInt = Math.floor(totalMonths / 12);
+        let ageMonthsRem = totalMonths % 12;
+        document.getElementById('age-display').textContent = `${ageYearsInt} 歲 ${ageMonthsRem} 個月`;
+
+        // BMI
+        const bmi = Math.round((w / ((h/100)**2)) * 10) / 10;
+        document.getElementById('bmi-display').textContent = bmi;
+        
+        // BMI Status
+        const bmiStatusSpan = document.getElementById('bmi-status');
+        let bmiStatusText = "";
+        
+        if (ageYearsInt >= 7 && ageYearsInt <= 18) {
+             const cut = bmiCutoffs[gender][ageYearsInt];
+             if (cut) {
+                 if (bmi >= cut.ob) { bmiStatusText = "肥胖"; bmiStatusSpan.className = "status-tag st-danger"; }
+                 else if (bmi >= cut.ow) { bmiStatusText = "過重"; bmiStatusSpan.className = "status-tag st-warn"; }
+                 else if (bmi < 13.5) { bmiStatusText = "過輕?"; bmiStatusSpan.className = "status-tag st-warn"; }
+                 else { bmiStatusText = "適中"; bmiStatusSpan.className = "status-tag st-normal"; }
+                 bmiStatusSpan.textContent = bmiStatusText;
+                 bmiStatusSpan.style.display = "inline-block";
+             }
+        } else { bmiStatusSpan.style.display = "none"; }
+
+        // Lookup
+        let table, refText;
+        if (totalMonths <= 12) {
+            let lookupMonth = Math.max(0, totalMonths); 
+            table = growthData[gender].infant[lookupMonth];
+            refText = lookupMonth + " 個月";
+        } else {
+            let ageInYears = totalMonths / 12;
+            let lookupAge = Math.round(ageInYears * 2) / 2; 
+            if(lookupAge < 1.5) lookupAge = 1.5; 
+            if(lookupAge > 18) lookupAge = 18;
+            table = growthData[gender].child[lookupAge.toString()];
+            refText = lookupAge + " 歲";
+        }
+
+        document.getElementById('ref-age-label').textContent = refText;
+
+        if (table) {
+            document.getElementById('h-val').textContent = h;
+            document.getElementById('w-val').textContent = w;
+            
+            updateVisualBar('h-marker', h, table.h);
+            updateVisualBar('w-marker', w, table.w);
+            
+            let genderStr = gender === 'boy' ? 'Boy' : 'Girl';
+            copyText = `Growth: ${ageYearsInt}y${ageMonthsRem}m ${genderStr}\n` +
+                       `- Ht: ${h}cm (P50: ${table.h[1]})\n` + 
+                       `- Wt: ${w}kg (P50: ${table.w[1]})\n` +
+                       `- BMI: ${bmi} ${bmiStatusText ? '('+bmiStatusText+')' : ''}`;
+        }
+
+        document.getElementById('growth-result').style.display = 'block';
+        document.getElementById('growth-result').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function updateVisualBar(elementId, val, arr) {
+        let pos = 50;
+        const p3 = arr[0], p50 = arr[1], p97 = arr[2];
+        if (val < p3) pos = 15 * (val / p3);
+        else if (val >= p3 && val < p50) pos = 15 + (35 * ((val - p3) / (p50 - p3)));
+        else if (val >= p50 && val <= p97) pos = 50 + (35 * ((val - p50) / (p97 - p50)));
+        else { pos = 85 + (15 * ((val - p97) / (p97 * 0.2))); if(pos > 100) pos = 100; }
+        document.getElementById(elementId).style.left = pos + "%";
+    }
+
+    function copyResult() {
+        if(!copyText) return;
+        navigator.clipboard.writeText(copyText).then(() => { alert("已複製病歷摘要！"); });
+    }
+</script>
+
+</body>
+</html>
