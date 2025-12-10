@@ -4,25 +4,34 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>生長評估小幫手 | 下班後的某宅羊</title>
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="宅羊醫師">
+<link rel="apple-touch-icon" href="https://i.meee.com.tw/Ifnyy0B.png">
+<link rel="icon" href="https://i.meee.com.tw/Ifnyy0B.png">
+
 <style>
   :root {
     --primary: #007AFF; --primary-light: #E3F2FD;
     --secondary: #34C759; --accent: #FF9500;
     --danger: #FF3B30; --text: #1C1C1E; --gray: #8E8E93;
     --bg: #F2F2F7; --card: #FFFFFF;
-    /* Overlay */
     --overlay-bg: rgba(0,0,0,0.6);
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 50px; }
 
   /* Header */
-  .header { background: var(--card); padding: 15px; text-align: center; border-bottom: 1px solid #E5E5EA; position: sticky; top: 0; z-index: 100; }
-  .header a { text-decoration: none; color: var(--text); font-weight: 800; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .header { background: var(--card); padding: 12px; text-align: center; border-bottom: 1px solid #E5E5EA; position: sticky; top: 0; z-index: 100; padding-top: max(12px, env(safe-area-inset-top)); }
+  .header-link { text-decoration: none; color: var(--text); font-weight: 800; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; gap: 10px; }
   .fb-tag { background: #1877F2; color: #fff; font-size: 0.7rem; padding: 3px 6px; border-radius: 4px; font-weight: 600; }
+  
+  /* Logo Image Style */
+  .brand-logo { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 
   /* Tabs */
-  .nav-wrapper { background: var(--bg); position: sticky; top: 54px; z-index: 99; padding: 10px 0; display: flex; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+  .nav-wrapper { background: var(--bg); position: sticky; top: 58px; z-index: 99; padding: 10px 0; display: flex; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
   .nav { display: flex; gap: 8px; overflow-x: auto; padding: 0 10px; max-width: 100%; -webkit-overflow-scrolling: touch; scrollbar-width: none;} 
   .nav::-webkit-scrollbar { display: none; }
   .nav-btn { flex: 0 0 auto; padding: 8px 16px; border-radius: 20px; border: 1px solid #D1D1D6; background: #fff; color: var(--gray); font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 0.9rem; }
@@ -88,7 +97,8 @@
   /* Share Card Modal */
   .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--overlay-bg); z-index: 1000; display: none; justify-content: center; align-items: center; padding: 20px; }
   .share-card { background: white; width: 100%; max-width: 350px; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center; position: relative; }
-  .sc-header { background: linear-gradient(135deg, #64B5F6, #42A5F5); padding: 20px; color: white; }
+  .sc-header { background: linear-gradient(135deg, #64B5F6, #42A5F5); padding: 20px; color: white; display: flex; flex-direction: column; align-items: center; gap: 10px;}
+  .sc-logo-img { width: 60px; height: 60px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.5); object-fit: cover; }
   .sc-body { padding: 25px; }
   .sc-title { font-size: 1.2rem; font-weight: 800; margin-bottom: 5px; }
   .sc-subtitle { font-size: 0.9rem; opacity: 0.9; }
@@ -101,8 +111,10 @@
 <body>
 
 <div class="header">
-  <a href="https://www.facebook.com/profile.php?id=61584059466555" target="_blank">
-    <span>🐑 下班後的某宅羊</span> <span class="fb-tag">FB</span>
+  <a href="https://www.facebook.com/profile.php?id=61584059466555" target="_blank" class="header-link">
+    <img src="https://i.meee.com.tw/Ifnyy0B.png" class="brand-logo" alt="Logo">
+    <span class="brand-name">下班後的某宅羊</span>
+    <span class="fb-badge">FB</span>
   </a>
 </div>
 
@@ -251,7 +263,7 @@
     <div class="share-card">
         <button class="close-btn" onclick="document.getElementById('share-modal').style.display='none'">✕</button>
         <div class="sc-header">
-            <div style="font-size:2rem;">🐑</div>
+            <img src="https://i.meee.com.tw/Ifnyy0B.png" class="sc-logo-img" alt="Logo">
             <div class="sc-title">下班後的某宅羊</div>
             <div class="sc-subtitle">兒童成長紀錄</div>
         </div>
@@ -280,9 +292,9 @@ const DB = {
     girl: [[0,45,49,53,2.4,3.2,4.2],[3,56,60,64,4.5,5.8,7.5],[6,61,66,70,5.7,7.3,9.3],[12,69,74,79,7.0,8.9,11.5],[24,79,86,93,9.0,11.5,14.8],[36,87,95,103,10.8,13.9,18.1],[48,94,103,111,12.3,16.1,21.5],[60,100,109,119,13.7,18.2,24.9],[72,106,116,127,15.5,20.4,27.9],[96,118,127,136,19.2,25.0,35.5],[120,129,139,150,24.1,32.5,48.5],[144,141,152,164,31.4,42.0,63.5],[168,149,159,171,39.3,50.6,73.5],[192,152,163,174,43.9,55.2,78.5],[216,153,163,175,45.5,56.9,81.0]]
   },
   vaccines: [
-    {m:0,n:"B肝(1)"},{m:1,n:"B肝(2)"},{m:2,n:"五合一(1)+13價(1)"},{m:4,n:"五合一(2)+13價(2)"},{m:5,n:"卡介苗"},{m:6,n:"五合一(3)+B肝(3)"},{m:12,n:"MMR(1)+水痘(1)+13價(3)"},{m:15,n:"A肝(1)"},{m:18,n:"五合一(4)+A肝(2)"},{m:27,n:"日腦(1)+(2)"},{m:60,n:"MMR(2)+四合一+水痘(2)自費"}
+    {m:0,n:"B肝(1)"},{m:1,n:"B肝(2)"},{m:2,n:"五合一(1)+13價(1)"},{m:4,n:"五合一(2)+13價(2)"},{m:5,n:"卡介苗"},{m:6,n:"五合一(3)+B肝(3)"},{m:12,n:"MMR(1)+水痘(1)+13價(3)"},{m:15,n:"日腦(1)"},{m:18,n:"五合一(4)+A肝(1)"},{m:27,n:"日腦(2)+A肝(2)"},{m:60,n:"MMR(2)+四合一+水痘(2)自費"}
   ],
-  cut: {boy:{7:20.3,8:21.6,9:22.7,10:23.7,11:24.6,12:25.5,13:26.4,14:27.2,15:28,16:28.6,17:29.2,18:29.7},girl:{7:19.7,8:20.6,9:21.5,10:22.3,11:23.2,12:24,13:24.8,14:25.6,15:26.3,16:26.9,17:27.4,18:27.8}}
+  cut: {boy:{7:20.3,8:21.6,9:22.7,10:23.7,11:24.6,12:25.5,13:26.4,14:27.2,15:28,16:28.6,17:29.2,18:29.7},girl:{7:19.7,8:20.6,9:21.5,10:22.3,11:21.0,12:21.6,13:22.2,14:22.7,15:23.1,16:23.4,17:23.7,18:24.0}}
 };
 
 const app = {
@@ -527,7 +539,7 @@ const app = {
   calcTarget: function() {
     const f = parseFloat(document.getElementById('fh').value);
     const m = parseFloat(document.getElementById('mh').value);
-    if(!f || !m) return;
+    if(!f || !m) { alert("請輸入父母身高"); return; }
     let t = (this.data.gender === 'boy') ? (f+m+13)/2 : (f+m-13)/2;
     document.getElementById('t-val').textContent = t.toFixed(1);
     document.getElementById('t-range').textContent = `${(t-7.5).toFixed(1)} ~ ${(t+7.5).toFixed(1)}`;
