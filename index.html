@@ -101,7 +101,7 @@
 <body>
 
 <div class="header">
-  <a href="https://www.facebook.com/profile.php?id=61584059466555" target="_blank" class="header-link">
+  <a href="https://www.facebook.com/profile.php?id=61584059466555" target="_blank">
     <span>🐑 下班後的某宅羊</span> <span class="fb-tag">FB</span>
   </a>
 </div>
@@ -127,11 +127,17 @@
 
       <span class="label">出生年月日 (輸入任一欄自動換算)</span>
       <div class="date-box">
-        <div class="date-row"><span class="sub-lbl">西元</span><input type="date" id="dob-ad" oninput="app.syncDate('ad')"></div>
         <div class="date-row">
-            <span class="sub-lbl">民國</span><input type="tel" id="roc-y" placeholder="113" style="flex:1" onchange="app.syncDate('roc')"> 
-            <span class="sub-lbl">年</span><input type="tel" id="roc-m" placeholder="5" style="width:50px" onchange="app.syncDate('roc')"> 
-            <span class="sub-lbl">月</span><input type="tel" id="roc-d" placeholder="20" style="width:50px" onchange="app.syncDate('roc')"> 
+            <span class="sub-lbl">西元</span>
+            <input type="date" id="dob-ad" oninput="app.syncDate('ad')">
+        </div>
+        <div class="date-row">
+            <span class="sub-lbl">民國</span>
+            <input type="tel" id="roc-y" placeholder="113" style="flex:1" oninput="app.syncDate('roc')"> 
+            <span class="sub-lbl">年</span>
+            <input type="tel" id="roc-m" placeholder="5" style="width:50px" oninput="app.syncDate('roc')"> 
+            <span class="sub-lbl">月</span>
+            <input type="tel" id="roc-d" placeholder="20" style="width:50px" oninput="app.syncDate('roc')"> 
             <span class="sub-lbl">日</span>
         </div>
       </div>
@@ -170,7 +176,7 @@
            <div style="font-size:0.85rem; opacity:0.8; margin-top:5px; color:#01579B;">(含奶、湯品及飲水)<br>根據Holliday-Segar formula公式計算</div>
         </div>
 
-        <button class="btn btn-share" onclick="app.showShareCard()">📸 產生寶寶成長卡</button>
+        <button class="btn btn-share" onclick="app.showShareCard()">📸 產生兒童成長卡</button>
         <button class="btn btn-outline" onclick="app.copy()">📋 複製病歷摘要</button>
       </div>
     </div>
@@ -247,7 +253,7 @@
         <div class="sc-header">
             <div style="font-size:2rem;">🐑</div>
             <div class="sc-title">下班後的某宅羊</div>
-            <div class="sc-subtitle">寶寶成長紀錄</div>
+            <div class="sc-subtitle">兒童成長紀錄</div>
         </div>
         <div class="sc-body">
             <div style="margin-bottom:20px; font-weight:bold; color:#555;" id="sc-age"></div>
@@ -488,6 +494,7 @@ const app = {
     const now = new Date();
     let m = (now.getFullYear() - this.data.birth.getFullYear()) * 12 + (now.getMonth() - this.data.birth.getMonth());
     const y = Math.floor(m/12);
+    // Reset all
     document.querySelectorAll('.tooth').forEach(el => el.classList.remove('active'));
     
     let txt = "";
@@ -517,11 +524,10 @@ const app = {
       if(el) el.classList.add('active');
   }); },
 
-  // --- TARGET ---
   calcTarget: function() {
     const f = parseFloat(document.getElementById('fh').value);
     const m = parseFloat(document.getElementById('mh').value);
-    if(!f || !m) { alert("請輸入父母身高"); return; }
+    if(!f || !m) return;
     let t = (this.data.gender === 'boy') ? (f+m+13)/2 : (f+m-13)/2;
     document.getElementById('t-val').textContent = t.toFixed(1);
     document.getElementById('t-range').textContent = `${(t-7.5).toFixed(1)} ~ ${(t+7.5).toFixed(1)}`;
