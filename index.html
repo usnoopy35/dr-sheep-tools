@@ -8,8 +8,10 @@
   :root {
     --primary: #007AFF; --primary-light: #E3F2FD;
     --secondary: #34C759; --accent: #FF9500;
-    --text: #1C1C1E; --gray: #8E8E93;
+    --danger: #FF3B30; --text: #1C1C1E; --gray: #8E8E93;
     --bg: #F2F2F7; --card: #FFFFFF;
+    /* Overlay */
+    --overlay-bg: rgba(0,0,0,0.6);
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 50px; }
@@ -19,7 +21,7 @@
   .header a { text-decoration: none; color: var(--text); font-weight: 800; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
   .fb-tag { background: #1877F2; color: #fff; font-size: 0.7rem; padding: 3px 6px; border-radius: 4px; font-weight: 600; }
 
-  /* Nav Tabs */
+  /* Tabs */
   .nav-wrapper { background: var(--bg); position: sticky; top: 54px; z-index: 99; padding: 10px 0; display: flex; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
   .nav { display: flex; gap: 8px; overflow-x: auto; padding: 0 10px; max-width: 100%; -webkit-overflow-scrolling: touch; scrollbar-width: none;} 
   .nav::-webkit-scrollbar { display: none; }
@@ -32,7 +34,7 @@
   .view.active { display: block; }
   @keyframes fade { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
 
-  /* Card & Inputs */
+  /* Card */
   .card { background: var(--card); border-radius: 16px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 20px; }
   .label { font-size: 0.85rem; color: var(--gray); font-weight: 700; display: block; margin-bottom: 6px; text-transform: uppercase; }
   .row { display: flex; gap: 12px; margin-bottom: 15px; }
@@ -55,47 +57,51 @@
   .btn:active { transform: scale(0.98); }
   .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 4px 12px rgba(0,122,255,0.2); }
   .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); margin-top: 20px; }
+  .btn-share { background: linear-gradient(135deg, #FF9500, #FF5E3A); color: white; margin-top: 20px; box-shadow: 0 4px 12px rgba(255, 94, 58, 0.3); }
 
-  /* Visual Bar (Fixed Gradient) */
+  /* Visual Bar */
   .bar-box { margin-bottom: 25px; }
-  .bar-container { 
-      height: 12px; 
-      /* Fixed: Gradient logic restored */
-      background: linear-gradient(90deg, #FF9500 0%, #FFD60A 15%, #34C759 15%, #34C759 85%, #FFD60A 85%, #FF9500 100%);
-      border-radius: 6px; 
-      position: relative; 
-      margin: 8px 0; 
-  }
-  .marker { 
-      position: absolute; top: -3px; width: 4px; height: 18px; 
-      background: #1C1C1E; border: 1px solid white;
-      left: 50%; transition: left 0.5s; border-radius: 2px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-  }
+  .bar-container { height: 12px; background: linear-gradient(90deg, #FF9500 0%, #FFD60A 15%, #34C759 15%, #34C759 85%, #FFD60A 85%, #FF9500 100%); border-radius: 6px; position: relative; margin: 8px 0; }
+  .marker { position: absolute; top: -3px; width: 4px; height: 18px; background: #1C1C1E; border: 1px solid white; left: 50%; transition: left 0.5s; border-radius: 2px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
   .bar-legend { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--gray); margin-top: 5px; }
   .bar-legend span b { display: block; font-size: 0.7rem; color: #aaa; font-weight: normal; }
 
+  /* Values */
+  .val-row { display: flex; justify-content: space-between; align-items: baseline; }
   .val-big { font-size: 1.4rem; font-weight: 800; color: var(--text); }
   .val-unit { font-size: 0.9rem; color: var(--gray); margin-left: 2px; }
+  .pr-badge { font-size: 0.9rem; background: #E3F2FD; color: #007AFF; padding: 2px 8px; border-radius: 6px; font-weight: bold; margin-left: 8px; vertical-align: bottom;}
+  .status-badge { font-size: 0.75rem; padding: 3px 8px; border-radius: 20px; margin-left: 6px; color: white; font-weight: bold; vertical-align: middle; }
+  .bg-ok { background: #E8F5E9; color: #2E7D32; } .bg-warn { background: #FFF3E0; color: #E65100; } .bg-bad { background: #FFEBEE; color: #C62828; }
 
   /* Modules */
   .info-box { background: #E1F5FE; border-left: 4px solid #0288D1; padding: 12px; border-radius: 8px; margin-top: 15px; }
-  
-  /* Tooth SVG (Improved) */
-  .tooth-svg { max-width: 300px; margin: 0 auto; display: block; }
-  .tooth { fill: #F2F2F7; stroke: #C7C7CC; stroke-width: 1.5; transition: 0.3s; }
+  .tooth-svg { max-width: 280px; margin: 0 auto; display: block; }
+  .tooth { fill: #f2f2f7; stroke: #c7c7cc; transition: 0.3s; }
   .tooth.active { fill: #FFD60A; stroke: #FF9500; }
-  
   .warn { background: #FFF3E0; color: #E65100; padding: 10px; border-radius: 8px; font-size: 0.85rem; margin-top: 15px; }
   
-  /* List Styles */
-  .item-list { padding: 10px; border-bottom: 1px solid #eee; display: flex; gap: 8px; font-size: 0.95rem; }
-  .vac-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed #eee; font-size: 0.9rem; }
+  /* Vaccine List */
+  .vac-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px dashed #eee; font-size: 0.95rem; }
+  .cal-btn { background: #F2F2F7; border: none; padding: 5px 10px; border-radius: 15px; font-size: 0.8rem; cursor: pointer; margin-left: 10px; color: #007AFF; font-weight: bold; text-decoration: none;}
+
+  /* Share Card Modal */
+  .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--overlay-bg); z-index: 1000; display: none; justify-content: center; align-items: center; padding: 20px; }
+  .share-card { background: white; width: 100%; max-width: 350px; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center; position: relative; }
+  .sc-header { background: linear-gradient(135deg, #64B5F6, #42A5F5); padding: 20px; color: white; }
+  .sc-body { padding: 25px; }
+  .sc-title { font-size: 1.2rem; font-weight: 800; margin-bottom: 5px; }
+  .sc-subtitle { font-size: 0.9rem; opacity: 0.9; }
+  .sc-data-row { display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px dashed #eee; padding-bottom: 10px; }
+  .sc-val { font-size: 1.5rem; font-weight: 800; color: #333; }
+  .sc-pr { font-size: 0.9rem; background: #E3F2FD; color: #007AFF; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+  .close-btn { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.2); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-weight: bold; }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <a href="https://www.facebook.com/profile.php?id=61584059466555" target="_blank">
+  <a href="https://www.facebook.com/profile.php?id=61584059466555" target="_blank" class="header-link">
     <span>🐑 下班後的某宅羊</span> <span class="fb-tag">FB</span>
   </a>
 </div>
@@ -119,7 +125,7 @@
         <div id="rb-girl" class="radio-btn" onclick="app.setGender('girl')">👧 女生</div>
       </div>
 
-      <span class="label">出生年月日</span>
+      <span class="label">出生年月日 (輸入任一欄自動換算)</span>
       <div class="date-box">
         <div class="date-row"><span class="sub-lbl">西元</span><input type="date" id="dob-ad" oninput="app.syncDate('ad')"></div>
         <div class="date-row">
@@ -142,40 +148,29 @@
         <div style="font-size:0.85rem; color:#888; margin-bottom:20px;">對照標準: WHO & 台灣常用生長曲線</div>
 
         <div class="bar-box">
-          <div style="display:flex; justify-content:space-between; align-items:baseline;">
-            <span class="label">身高</span> <div><span class="val-big" id="h-val"></span><span class="val-unit">cm</span></div>
-          </div>
+          <div class="val-row"><span class="label">身高</span><div><span class="val-big" id="h-val"></span><span class="val-unit">cm</span> <span class="pr-badge" id="h-pr"></span></div></div>
           <div class="bar-container"><div id="h-marker" class="marker"></div></div>
-          <div class="bar-legend">
-              <span>3% <br><b id="h-p3"></b></span>
-              <span>50% <br><b id="h-p50"></b></span>
-              <span>97% <br><b id="h-p97"></b></span>
-          </div>
+          <div class="bar-legend"><span>3%<br><b id="h-p3"></b></span><span>50%<br><b id="h-p50"></b></span><span>97%<br><b id="h-p97"></b></span></div>
         </div>
 
         <div class="bar-box">
-          <div style="display:flex; justify-content:space-between; align-items:baseline;">
-            <span class="label">體重</span> <div><span class="val-big" id="w-val"></span><span class="val-unit">kg</span></div>
-          </div>
+          <div class="val-row"><span class="label">體重</span><div><span class="val-big" id="w-val"></span><span class="val-unit">kg</span> <span class="pr-badge" id="w-pr"></span></div></div>
           <div class="bar-container"><div id="w-marker" class="marker"></div></div>
-          <div class="bar-legend">
-              <span>3% <br><b id="w-p3"></b></span>
-              <span>50% <br><b id="w-p50"></b></span>
-              <span>97% <br><b id="w-p97"></b></span>
-          </div>
+          <div class="bar-legend"><span>3%<br><b id="w-p3"></b></span><span>50%<br><b id="w-p50"></b></span><span>97%<br><b id="w-p97"></b></span></div>
         </div>
 
         <div class="row" style="align-items:center; justify-content:space-between; border-top:1px dashed #eee; padding-top:10px;">
            <span class="label">BMI</span>
-           <div><span class="val-big" id="bmi-val"></span> <span id="bmi-tag" style="font-size:0.8rem; padding:2px 6px; border-radius:4px; color:white; font-weight:bold; display:none;"></span></div>
+           <div><span class="val-big" id="bmi-val"></span> <span id="bmi-tag" style="display:none;" class="status-badge"></span></div>
         </div>
 
         <div class="info-box">
            <div style="font-weight:bold; color:#0277BD; margin-bottom:5px;">💧 建議每日水分</div>
            <span class="val-big" style="color:#01579B" id="water-val">0</span> ml
-           <div style="font-size:0.8rem; opacity:0.7; margin-top:5px;">(含奶、湯品 | Holliday-Segar)</div>
+           <div style="font-size:0.85rem; opacity:0.8; margin-top:5px; color:#01579B;">(含奶、湯品及飲水)<br>根據Holliday-Segar formula公式計算</div>
         </div>
 
+        <button class="btn btn-share" onclick="app.showShareCard()">📸 產生寶寶成長卡</button>
         <button class="btn btn-outline" onclick="app.copy()">📋 複製病歷摘要</button>
       </div>
     </div>
@@ -198,7 +193,7 @@
     <div class="card">
       <div id="vac-age" style="text-align:center; font-weight:bold; color:var(--primary); margin-bottom:15px;"></div>
       <div id="vac-list"></div>
-      <div class="warn">依據台灣 CDC 常規疫苗時程試算。</div>
+      <div class="warn">依據台灣 CDC 常規疫苗時程試算，實際接種請依黃卡為準。</div>
     </div>
   </div>
 
@@ -209,32 +204,20 @@
         <button class="btn" style="flex:1; padding:10px; font-size:0.9rem; background:#eee; color:#666;" onclick="app.setToothMode('perm')">🧑 恆牙</button>
       </div>
       <div id="tooth-txt" style="font-weight:bold; margin-bottom:10px; color:#00695C;"></div>
-      
       <svg class="tooth-svg" viewBox="0 0 220 220">
-        <circle id="tu-1r" cx="95" cy="30" r="9" class="tooth" /> 
-        <circle id="tu-1l" cx="125" cy="30" r="9" class="tooth" />
-        <circle id="tu-2r" cx="75" cy="35" r="8" class="tooth" />
-        <circle id="tu-2l" cx="145" cy="35" r="8" class="tooth" />
-        <circle id="tu-3r" cx="55" cy="45" r="8" class="tooth" />
-        <circle id="tu-3l" cx="165" cy="45" r="8" class="tooth" />
-        <circle id="tu-4r" cx="35" cy="60" r="9" class="tooth" />
-        <circle id="tu-4l" cx="185" cy="60" r="9" class="tooth" />
-        <circle id="tu-5r" cx="20" cy="80" r="10" class="tooth" />
-        <circle id="tu-5l" cx="200" cy="80" r="10" class="tooth" />
-        
-        <circle id="tl-1r" cx="95" cy="190" r="9" class="tooth" />
-        <circle id="tl-1l" cx="125" cy="190" r="9" class="tooth" />
-        <circle id="tl-2r" cx="75" cy="185" r="8" class="tooth" />
-        <circle id="tl-2l" cx="145" cy="185" r="8" class="tooth" />
-        <circle id="tl-3r" cx="55" cy="175" r="8" class="tooth" />
-        <circle id="tl-3l" cx="165" cy="175" r="8" class="tooth" />
-        <circle id="tl-4r" cx="35" cy="160" r="9" class="tooth" />
-        <circle id="tl-4l" cx="185" cy="160" r="9" class="tooth" />
-        <circle id="tl-5r" cx="20" cy="140" r="10" class="tooth" />
-        <circle id="tl-5l" cx="200" cy="140" r="10" class="tooth" />
-
+        <circle id="tu-1r" cx="95" cy="30" r="9" class="tooth" /> <circle id="tu-1l" cx="125" cy="30" r="9" class="tooth" />
+        <circle id="tu-2r" cx="75" cy="35" r="8" class="tooth" /> <circle id="tu-2l" cx="145" cy="35" r="8" class="tooth" />
+        <circle id="tu-3r" cx="55" cy="45" r="8" class="tooth" /> <circle id="tu-3l" cx="165" cy="45" r="8" class="tooth" />
+        <circle id="tu-4r" cx="35" cy="60" r="9" class="tooth" /> <circle id="tu-4l" cx="185" cy="60" r="9" class="tooth" />
+        <circle id="tu-5r" cx="20" cy="80" r="10" class="tooth" /> <circle id="tu-5l" cx="200" cy="80" r="10" class="tooth" />
+        <circle id="tl-1r" cx="95" cy="190" r="9" class="tooth" /> <circle id="tl-1l" cx="125" cy="190" r="9" class="tooth" />
+        <circle id="tl-2r" cx="75" cy="185" r="8" class="tooth" /> <circle id="tl-2l" cx="145" cy="185" r="8" class="tooth" />
+        <circle id="tl-3r" cx="55" cy="175" r="8" class="tooth" /> <circle id="tl-3l" cx="165" cy="175" r="8" class="tooth" />
+        <circle id="tl-4r" cx="35" cy="160" r="9" class="tooth" /> <circle id="tl-4l" cx="185" cy="160" r="9" class="tooth" />
+        <circle id="tl-5r" cx="20" cy="140" r="10" class="tooth" /> <circle id="tl-5l" cx="200" cy="140" r="10" class="tooth" />
         <text x="110" y="115" font-size="10" text-anchor="middle" fill="#ccc">口腔示意圖 (黃色為已長出)</text>
       </svg>
+      <div class="warn" style="margin-top:10px;">圖示為平均萌發進度，實際狀況因人而異。</div>
     </div>
   </div>
 
@@ -248,8 +231,8 @@
       <button class="btn btn-primary" onclick="app.calcTarget()">計算</button>
       <div id="target-res" style="text-align:center; margin-top:20px; display:none;">
         <span class="label">預測身高</span>
-        <div style="font-size:2.5rem; font-weight:800; color:var(--primary);"><span id="t-val"></span> <span style="font-size:1rem;">cm</span></div>
-        <div style="background:#E3F2FD; color:#007AFF; padding:5px 15px; border-radius:15px; display:inline-block; font-weight:bold; margin-top:5px;">
+        <div style="font-size:2.5rem; font-weight:800; color:var(--primary); margin:10px 0;"><span id="t-val"></span> <span style="font-size:1rem;">cm</span></div>
+        <div style="background:#E3F2FD; color:#007AFF; padding:5px 15px; border-radius:15px; display:inline-block; font-weight:bold;">
            區間: <span id="t-range"></span>
         </div>
       </div>
@@ -258,21 +241,42 @@
 
 </div>
 
+<div id="share-modal" class="modal-overlay">
+    <div class="share-card">
+        <button class="close-btn" onclick="document.getElementById('share-modal').style.display='none'">✕</button>
+        <div class="sc-header">
+            <div style="font-size:2rem;">🐑</div>
+            <div class="sc-title">下班後的某宅羊</div>
+            <div class="sc-subtitle">寶寶成長紀錄</div>
+        </div>
+        <div class="sc-body">
+            <div style="margin-bottom:20px; font-weight:bold; color:#555;" id="sc-age"></div>
+            
+            <div class="sc-data-row">
+                <span class="label">身高</span>
+                <div><span class="sc-val" id="sc-h"></span> cm <span class="sc-pr" id="sc-h-pr"></span></div>
+            </div>
+            <div class="sc-data-row">
+                <span class="label">體重</span>
+                <div><span class="sc-val" id="sc-w"></span> kg <span class="sc-pr" id="sc-w-pr"></span></div>
+            </div>
+            
+            <div style="margin-top:20px; font-size:0.8rem; color:#999;">請自行截圖分享 🎉</div>
+        </div>
+    </div>
+</div>
+
 <script>
-// --- STABLE DATA ENGINE ---
 const DB = {
-  ms: {
-    "4m":["俯臥抬頭45度","頭部穩定","注視人臉","手掌張開"], "6m":["扶坐","翻身","無鬥雞眼","主動抓握"], "9m":["坐穩","爬行","換手拿物","叫名反應"], "1y":["扶站","指尖抓握","發ㄅㄇ音","怕生"], "1.5y":["獨走","叫爸媽","指認物品","聽懂指令"], "2y":["走穩","說單字","模仿動作","疊積木"], "3y":["雙腳跳","說話清楚","說名字","畫圓"], "4y":["單腳站","說句子","穿脫衣","辨色"], "5y":["單腳跳","畫十字","口齒清","社交互動"]
-  },
+  ms: {"4m":["俯臥抬頭45度","頭部穩定","注視人臉","手掌張開"],"6m":["扶坐","翻身","無鬥雞眼","主動抓握"],"9m":["坐穩","爬行","換手拿物","叫名反應"],"1y":["扶站","指尖抓握","發ㄅㄇ音","怕生"],"1.5y":["獨走","叫爸媽","指認物品","聽懂指令"],"2y":["走穩","說單字","模仿動作","疊積木"],"3y":["雙腳跳","說話清楚","說名字","畫圓"],"4y":["單腳站","說句子","穿脫衣","辨色"],"5y":["單腳跳","畫十字","口齒清","社交互動"]},
   growth: {
     boy: [[0,46,50,54,2.5,3.3,4.4],[3,57,61,66,5.0,6.4,8.0],[6,63,68,72,6.4,7.9,9.8],[12,71,76,81,7.7,9.6,12.0],[24,81,88,93,9.7,12.2,15.3],[36,89,96,104,11.3,14.3,18.3],[48,95,103,112,12.7,16.3,21.2],[60,101,110,119,14.1,18.3,24.2],[72,106,117,127,15.9,20.5,27.5],[96,119,128,137,19.5,25.4,35.5],[120,129,138,149,23.7,31.2,45.6],[144,140,150,163,29.1,39.2,59.0],[168,152,163,176,37.2,50.1,75.6],[192,162,173,184,46.3,59.7,86.5],[216,166,176,188,52.0,64.6,91.5]],
     girl: [[0,45,49,53,2.4,3.2,4.2],[3,56,60,64,4.5,5.8,7.5],[6,61,66,70,5.7,7.3,9.3],[12,69,74,79,7.0,8.9,11.5],[24,79,86,93,9.0,11.5,14.8],[36,87,95,103,10.8,13.9,18.1],[48,94,103,111,12.3,16.1,21.5],[60,100,109,119,13.7,18.2,24.9],[72,106,116,127,15.5,20.4,27.9],[96,118,127,136,19.2,25.0,35.5],[120,129,139,150,24.1,32.5,48.5],[144,141,152,164,31.4,42.0,63.5],[168,149,159,171,39.3,50.6,73.5],[192,152,163,174,43.9,55.2,78.5],[216,153,163,175,45.5,56.9,81.0]]
   },
   vaccines: [
-    {m:0,n:"B肝(1)"},{m:1,n:"B肝(2)"},{m:2,n:"五合一(1)+13價(1)"},{m:4,n:"五合一(2)+13價(2)"},
-    {m:5,n:"卡介苗"},{m:6,n:"五合一(3)+B肝(3)"},{m:12,n:"MMR(1)+水痘(1)+13價(3)"},{m:15,n:"A肝(1)"},
-    {m:18,n:"五合一(4)+A肝(2)"},{m:27,n:"日腦(1)+(2)"},{m:60,n:"MMR(2)+四合一+水痘(2)自費"}
-  ]
+    {m:0,n:"B肝(1)"},{m:1,n:"B肝(2)"},{m:2,n:"五合一(1)+13價(1)"},{m:4,n:"五合一(2)+13價(2)"},{m:5,n:"卡介苗"},{m:6,n:"五合一(3)+B肝(3)"},{m:12,n:"MMR(1)+水痘(1)+13價(3)"},{m:15,n:"A肝(1)"},{m:18,n:"五合一(4)+A肝(2)"},{m:27,n:"日腦(1)+(2)"},{m:60,n:"MMR(2)+四合一+水痘(2)自費"}
+  ],
+  cut: {boy:{7:20.3,8:21.6,9:22.7,10:23.7,11:24.6,12:25.5,13:26.4,14:27.2,15:28,16:28.6,17:29.2,18:29.7},girl:{7:19.7,8:20.6,9:21.5,10:22.3,11:23.2,12:24,13:24.8,14:25.6,15:26.3,16:26.9,17:27.4,18:27.8}}
 };
 
 const app = {
@@ -281,6 +285,29 @@ const app = {
   init: function() {
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('dob-ad').max = today;
+    this.loadState(); // Auto-Load Logic
+  },
+
+  // --- Auto Save & Load ---
+  saveState: function() {
+    localStorage.setItem('ds_dob', document.getElementById('dob-ad').value);
+    localStorage.setItem('ds_gen', this.data.gender);
+    localStorage.setItem('ds_h', document.getElementById('ht').value);
+    localStorage.setItem('ds_w', document.getElementById('wt').value);
+  },
+  loadState: function() {
+    const d = localStorage.getItem('ds_dob');
+    if(d) {
+        document.getElementById('dob-ad').value = d;
+        this.syncDate('ad');
+    }
+    const g = localStorage.getItem('ds_gen');
+    if(g) {
+        this.setGender(g);
+        document.querySelector(`input[value="${g}"]`).checked = true;
+    }
+    document.getElementById('ht').value = localStorage.getItem('ds_h') || '';
+    document.getElementById('wt').value = localStorage.getItem('ds_w') || '';
   },
 
   tab: function(id) {
@@ -288,9 +315,8 @@ const app = {
     document.getElementById('view-'+id).classList.add('active');
     document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
     event.target.classList.add('active');
-    
-    if(id === 'milestone') this.checkMilestone();
-    if(id === 'vaccine') this.checkVaccine();
+    if(id === 'milestone') this.autoSelectMilestone();
+    if(id === 'vaccine') this.renderVaccines();
     if(id === 'teething') this.setToothMode('baby');
   },
 
@@ -298,6 +324,7 @@ const app = {
     this.data.gender = g;
     document.getElementById('rb-boy').className = g==='boy'?'radio-btn sel-boy':'radio-btn';
     document.getElementById('rb-girl').className = g==='girl'?'radio-btn sel-girl':'radio-btn';
+    this.saveState();
   },
 
   syncDate: function(source) {
@@ -321,22 +348,25 @@ const app = {
             this.data.birth = new Date(adEl.value);
         }
     }
+    this.saveState();
   },
 
+  // --- GROWTH ---
   calc: function() {
     if(!this.data.birth) { alert("請輸入生日"); return; }
     const h = parseFloat(document.getElementById('ht').value);
     const w = parseFloat(document.getElementById('wt').value);
     if(!h || !w) { alert("請輸入身高體重"); return; }
+    this.saveState();
 
     const now = new Date();
     let m = (now.getFullYear() - this.data.birth.getFullYear()) * 12 + (now.getMonth() - this.data.birth.getMonth());
     if(now.getDate() < this.data.birth.getDate()) m--;
-    if(m < 0) m = 0;
-    
-    document.getElementById('age-txt').textContent = `年齡：${Math.floor(m/12)}歲 ${m%12}個月`;
+    const ageY = Math.floor(m / 12);
+    const ageM = m % 12;
+    document.getElementById('age-txt').textContent = `年齡：${ageY} 歲 ${ageM} 個月`;
 
-    // Growth Interpolation
+    // Interpolation
     const table = DB.growth[this.data.gender];
     let lower = table[0], upper = table[table.length-1];
     for(let i=0; i<table.length-1; i++) {
@@ -344,7 +374,6 @@ const app = {
     }
     const r = (m - lower[0]) / (upper[0] - lower[0] || 1);
     const getVal = (i) => (lower[i] + (upper[i] - lower[i]) * r).toFixed(1);
-    
     const ref = { h3:getVal(1), h50:getVal(2), h97:getVal(3), w3:getVal(4), w50:getVal(5), w97:getVal(6) };
 
     this.updateBar('h', h, ref.h3, ref.h50, ref.h97);
@@ -354,11 +383,12 @@ const app = {
     const bmi = (w / ((h/100)**2)).toFixed(1);
     document.getElementById('bmi-val').textContent = bmi;
     const bmiTag = document.getElementById('bmi-tag');
-    if(m >= 84) { 
+    if(ageY >= 7 && ageY <= 18) { 
+       const ob = DB.cut[this.data.gender][ageY];
        bmiTag.style.display = 'inline-block';
-       if(bmi>24) {bmiTag.textContent="過重";bmiTag.style.background="#FF3B30";}
-       else if(bmi<14) {bmiTag.textContent="過輕";bmiTag.style.background="#FF9500";}
-       else {bmiTag.textContent="適中";bmiTag.style.background="#34C759";}
+       if(bmi > ob) {bmiTag.textContent="肥胖";bmiTag.className="status-badge bg-bad";}
+       else if(bmi < 14) {bmiTag.textContent="過輕?";bmiTag.className="status-badge bg-warn";}
+       else {bmiTag.textContent="適中";bmiTag.className="status-badge bg-ok";}
     } else bmiTag.style.display = 'none';
 
     // Water
@@ -367,7 +397,15 @@ const app = {
 
     document.getElementById('result-panel').style.display = 'block';
     
-    this.data.copy = `Growth: ${Math.floor(m/12)}y${m%12}m ${this.data.gender}\nHt: ${h}cm (${ref.h50})\nWt: ${w}kg (${ref.w50})\nBMI: ${bmi}`;
+    // Copy Text
+    this.data.copy = `Growth: ${ageY}y${ageM}m ${this.data.gender}\nHt: ${h}cm (${ref.h50})\nWt: ${w}kg (${ref.w50})\nBMI: ${bmi}`;
+    
+    // Fill Share Card Data
+    document.getElementById('sc-age').textContent = `${ageY} 歲 ${ageM} 個月`;
+    document.getElementById('sc-h').textContent = h;
+    document.getElementById('sc-w').textContent = w;
+    document.getElementById('sc-h-pr').textContent = document.getElementById('h-pr').textContent;
+    document.getElementById('sc-w-pr').textContent = document.getElementById('w-pr').textContent;
   },
 
   updateBar: function(type, val, p3, p50, p97) {
@@ -382,19 +420,27 @@ const app = {
     }
     
     let pos = 50;
-    if(val < p3) pos = 10;
-    else if(val > p97) pos = 90;
-    else if(val < p50) pos = 15 + (35 * ((val-p3)/(p50-p3)));
-    else pos = 50 + (35 * ((val-p50)/(p97-p50)));
+    let pr = "";
+    if(val < p3) { pos = 10; pr = "< 3%"; }
+    else if(val > p97) { pos = 90; pr = "> 97%"; }
+    else if(val < p50) { 
+        pos = 15 + (35 * ((val-p3)/(p50-p3))); 
+        pr = "PR " + Math.round(3 + ((val-p3)/(p50-p3))*47);
+    } else { 
+        pos = 50 + (35 * ((val-p50)/(p97-p50)));
+        pr = "PR " + Math.round(50 + ((val-p50)/(p97-p50))*47);
+    }
     document.getElementById(`${type}-marker`).style.left = pos + "%";
+    document.getElementById(`${type}-pr`).textContent = pr;
   },
 
-  checkMilestone: function() {
-    if(!this.data.birth) return;
+  // --- MILESTONES ---
+  autoSelectMilestone: function() {
+    if(!this.data.birth) { document.getElementById('ms-content').innerHTML = "<p style='text-align:center;color:#999'>請先輸入生日</p>"; return; }
     const now = new Date();
-    let m = (now.getFullYear() - this.data.birth.getFullYear()) * 12 + (now.getMonth() - this.data.birth.getMonth());
+    const m = (now.getFullYear() - this.data.birth.getFullYear()) * 12 + (now.getMonth() - this.data.birth.getMonth());
+    const vals = [5, 7, 10, 15, 20, 30, 42, 54, 999];
     const opts = ["4m","6m","9m","1y","1.5y","2y","3y","4y","5y"];
-    const vals = [5,7,10,15,20,30,42,54,999];
     let pick = "5y";
     for(let i=0; i<vals.length; i++) { if(m <= vals[i]) { pick = opts[i]; break; } }
     document.getElementById('ms-sel').value = pick;
@@ -407,10 +453,11 @@ const app = {
     document.getElementById('ms-list').innerHTML = html;
   },
 
-  checkVaccine: function() {
+  // --- VACCINE (With Calendar) ---
+  renderVaccines: function() {
     if(!this.data.birth) { document.getElementById('vac-list').innerHTML="請先輸入生日"; return; }
     const now = new Date();
-    let m = (now.getFullYear() - this.data.birth.getFullYear()) * 12 + (now.getMonth() - this.data.birth.getMonth());
+    const m = (now.getFullYear() - this.data.birth.getFullYear()) * 12 + (now.getMonth() - this.data.birth.getMonth());
     document.getElementById('vac-age').textContent = `目前月齡：${m} 個月`;
     
     let html = "";
@@ -418,13 +465,25 @@ const app = {
        const d = new Date(this.data.birth); d.setMonth(d.getMonth() + v.m);
        const dStr = `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;
        const isPast = now > d;
-       const color = isPast ? "#34C759" : "#8E8E93";
+       const color = isPast ? "#34C759" : "#000";
        const icon = isPast ? "✅" : "🗓️";
-       html += `<div class="vac-row"><div>${v.n}</div><div style="color:${color};">${icon} ${dStr}</div></div>`;
+       // Google Calendar Link
+       const calUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(v.n)}&dates=${d.toISOString().replace(/-|:|\.\d\d\d/g,"").split("T")[0]}/${d.toISOString().replace(/-|:|\.\d\d\d/g,"").split("T")[0]}&details=預計施打疫苗`;
+       
+       const btn = isPast ? "" : `<a href="${calUrl}" target="_blank" class="cal-btn">📅 加入</a>`;
+
+       html += `<div class="vac-row">
+         <div>${v.n}</div>
+         <div style="display:flex; align-items:center;">
+            <div style="color:${color}; font-size:0.9rem;">${icon} ${dStr}</div>
+            ${btn}
+         </div>
+       </div>`;
     });
     document.getElementById('vac-list').innerHTML = html;
   },
 
+  // --- TEETHING ---
   setToothMode: function(mode) {
     const now = new Date();
     let m = (now.getFullYear() - this.data.birth.getFullYear()) * 12 + (now.getMonth() - this.data.birth.getMonth());
@@ -440,33 +499,41 @@ const app = {
         if(m>=13) this.light(['tu-4l','tu-4r','tl-4l','tl-4r']);
         if(m>=16) this.light(['tu-3l','tu-3r','tl-3l','tl-3r']);
         if(m>=23) this.light(['tu-5l','tu-5r','tl-5l','tl-5r']);
-        txt = "乳牙 (黃色為已長出)";
+        txt = "顯示範圍：乳牙 (黃色為平均已長出)";
     } else {
-        if(y>=6) this.light(['tu-4l','tu-4r','tl-4l','tl-4r','tl-1l','tl-1r']); // First molar + lower incisor
+        if(y>=6) this.light(['tu-4l','tu-4r','tl-4l','tl-4r','tl-1l','tl-1r']); 
         if(y>=7) this.light(['tu-1l','tu-1r','tl-2l','tl-2r']); 
         if(y>=8) this.light(['tu-2l','tu-2r']);
         if(y>=9) this.light(['tl-3l','tl-3r']);
-        if(y>=10) this.light(['tu-4l','tu-4r','tl-4l','tl-4r']); // Premolars repl. molars
+        if(y>=10) this.light(['tu-4l','tu-4r','tl-4l','tl-4r']); 
         if(y>=11) this.light(['tu-3l','tu-3r','tu-5l','tu-5r','tl-5l','tl-5r']); 
-        if(y>=12) this.light(['tu-5l','tu-5r','tl-5l','tl-5r']); // Second molars
-        txt = "恆牙 (黃色為換牙/萌發)";
+        if(y>=12) this.light(['tu-5l','tu-5r','tl-5l','tl-5r']); 
+        txt = "顯示範圍：恆牙 (6歲起換牙/萌發)";
     }
     document.getElementById('tooth-txt').textContent = txt;
   },
-  light: function(ids) { ids.forEach(id => document.getElementById(id)?.classList.add('active')); },
+  light: function(ids) { ids.forEach(id => {
+      const el = document.getElementById(id);
+      if(el) el.classList.add('active');
+  }); },
 
+  // --- TARGET ---
   calcTarget: function() {
     const f = parseFloat(document.getElementById('fh').value);
     const m = parseFloat(document.getElementById('mh').value);
-    if(!f || !m) return;
+    if(!f || !m) { alert("請輸入父母身高"); return; }
     let t = (this.data.gender === 'boy') ? (f+m+13)/2 : (f+m-13)/2;
     document.getElementById('t-val').textContent = t.toFixed(1);
     document.getElementById('t-range').textContent = `${(t-7.5).toFixed(1)} ~ ${(t+7.5).toFixed(1)}`;
     document.getElementById('target-res').style.display = 'block';
   },
 
+  // --- UTILS ---
   copy: function() {
      navigator.clipboard.writeText(this.data.copy).then(()=>alert("已複製"));
+  },
+  showShareCard: function() {
+     document.getElementById('share-modal').style.display = 'flex';
   }
 };
 
