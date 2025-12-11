@@ -25,10 +25,8 @@
   /* Header */
   .header { background: var(--card); padding: 12px; text-align: center; border-bottom: 1px solid #E5E5EA; position: sticky; top: 0; z-index: 100; padding-top: max(12px, env(safe-area-inset-top)); }
   .header-link { text-decoration: none; color: var(--text); font-weight: 800; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; gap: 10px; }
-  .fb-tag { background: #1877F2; color: #fff; font-size: 0.7rem; padding: 3px 6px; border-radius: 4px; font-weight: 600; }
-  
-  /* Logo Image Style */
   .brand-logo { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+  .fb-tag { background: #1877F2; color: #fff; font-size: 0.7rem; padding: 3px 6px; border-radius: 4px; font-weight: 600; }
 
   /* Tabs */
   .nav-wrapper { background: var(--bg); position: sticky; top: 58px; z-index: 99; padding: 10px 0; display: flex; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
@@ -69,7 +67,7 @@
   .btn-share { background: linear-gradient(135deg, #FF9500, #FF5E3A); color: white; margin-top: 20px; box-shadow: 0 4px 12px rgba(255, 94, 58, 0.3); }
 
   /* Visual Bar */
-  .bar-box { margin-bottom: 25px; }
+  .bar-box { margin-bottom: 25px; transition: 0.3s; }
   .bar-container { height: 12px; background: linear-gradient(90deg, #FF9500 0%, #FFD60A 15%, #34C759 15%, #34C759 85%, #FFD60A 85%, #FF9500 100%); border-radius: 6px; position: relative; margin: 8px 0; }
   .marker { position: absolute; top: -3px; width: 4px; height: 18px; background: #1C1C1E; border: 1px solid white; left: 50%; transition: left 0.5s; border-radius: 2px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
   .bar-legend { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--gray); margin-top: 5px; }
@@ -163,15 +161,15 @@
 
       <div id="result-panel" style="display:none; margin-top:20px; border-top:1px solid #eee; padding-top:20px;">
         <div style="font-size:1.3rem; font-weight:800; margin-bottom:5px;" id="age-txt"></div>
-        <div style="font-size:0.85rem; color:#888; margin-bottom:20px;">對照標準: WHO & 台灣常用生長曲線</div>
+        <div style="font-size:0.85rem; color:#888; margin-bottom:20px;" id="ref-std-txt">對照標準: WHO & 台灣常用生長曲線</div>
 
-        <div class="bar-box">
+        <div class="bar-box" id="h-bar-box">
           <div class="val-row"><span class="label">身高</span><div><span class="val-big" id="h-val"></span><span class="val-unit">cm</span> <span class="pr-badge" id="h-pr"></span></div></div>
           <div class="bar-container"><div id="h-marker" class="marker"></div></div>
           <div class="bar-legend"><span>3%<br><b id="h-p3"></b></span><span>50%<br><b id="h-p50"></b></span><span>97%<br><b id="h-p97"></b></span></div>
         </div>
 
-        <div class="bar-box">
+        <div class="bar-box" id="w-bar-box">
           <div class="val-row"><span class="label">體重</span><div><span class="val-big" id="w-val"></span><span class="val-unit">kg</span> <span class="pr-badge" id="w-pr"></span></div></div>
           <div class="bar-container"><div id="w-marker" class="marker"></div></div>
           <div class="bar-legend"><span>3%<br><b id="w-p3"></b></span><span>50%<br><b id="w-p50"></b></span><span>97%<br><b id="w-p97"></b></span></div>
@@ -302,8 +300,8 @@ const app = {
   
   init: function() {
     const today = new Date().toISOString().split('T')[0];
-    document.getElementById('dob-ad').max = today;
-    this.loadState(); // Auto-Load Logic
+    // Remove max date limit to allow adults
+    this.loadState(); 
   },
 
   // --- Auto Save & Load ---
@@ -384,30 +382,63 @@ const app = {
     const ageM = m % 12;
     document.getElementById('age-txt').textContent = `年齡：${ageY} 歲 ${ageM} 個月`;
 
-    // Interpolation
-    const table = DB.growth[this.data.gender];
-    let lower = table[0], upper = table[table.length-1];
-    for(let i=0; i<table.length-1; i++) {
-        if(m >= table[i][0] && m <= table[i+1][0]) { lower = table[i]; upper = table[i+1]; break; }
-    }
-    const r = (m - lower[0]) / (upper[0] - lower[0] || 1);
-    const getVal = (i) => (lower[i] + (upper[i] - lower[i]) * r).toFixed(1);
-    const ref = { h3:getVal(1), h50:getVal(2), h97:getVal(3), w3:getVal(4), w50:getVal(5), w97:getVal(6) };
-
-    this.updateBar('h', h, ref.h3, ref.h50, ref.h97);
-    this.updateBar('w', w, ref.w3, ref.w50, ref.w97);
-
     // BMI
     const bmi = (w / ((h/100)**2)).toFixed(1);
     document.getElementById('bmi-val').textContent = bmi;
     const bmiTag = document.getElementById('bmi-tag');
-    if(ageY >= 7 && ageY <= 18) { 
-       const ob = DB.cut[this.data.gender][ageY];
-       bmiTag.style.display = 'inline-block';
-       if(bmi > ob) {bmiTag.textContent="肥胖";bmiTag.className="status-badge bg-bad";}
-       else if(bmi < 14) {bmiTag.textContent="過輕?";bmiTag.className="status-badge bg-warn";}
-       else {bmiTag.textContent="適中";bmiTag.className="status-badge bg-ok";}
-    } else bmiTag.style.display = 'none';
+
+    // ** ADULT MODE LOGIC (>18Y) **
+    if (ageY > 18) {
+        // Adult BMI (Taiwan HPA)
+        document.getElementById('ref-std-txt').textContent = "對照標準: 衛福部國健署 (成人BMI)";
+        // Hide Percentile Bars
+        document.querySelectorAll('.bar-box').forEach(el => el.style.display = 'none');
+        // Show BMI Status
+        bmiTag.style.display = 'inline-block';
+        if(bmi < 18.5) { bmiTag.textContent="過輕"; bmiTag.className="status-badge bg-warn"; }
+        else if(bmi < 24) { bmiTag.textContent="正常"; bmiTag.className="status-badge bg-ok"; }
+        else if(bmi < 27) { bmiTag.textContent="過重"; bmiTag.className="status-badge bg-warn"; }
+        else { bmiTag.textContent="肥胖"; bmiTag.className="status-badge bg-bad"; }
+        
+        // Share Card Data
+        document.getElementById('sc-h').textContent = h;
+        document.getElementById('sc-w').textContent = w;
+        document.getElementById('sc-h-pr').textContent = "-";
+        document.getElementById('sc-w-pr').textContent = "-";
+        
+    } else {
+        // ** CHILD MODE (0-18Y) **
+        document.getElementById('ref-std-txt').textContent = "對照標準: WHO & 台灣常用生長曲線";
+        document.querySelectorAll('.bar-box').forEach(el => el.style.display = 'block');
+        
+        // Interpolation
+        const table = DB.growth[this.data.gender];
+        let lower = table[0], upper = table[table.length-1];
+        for(let i=0; i<table.length-1; i++) {
+            if(m >= table[i][0] && m <= table[i+1][0]) { lower = table[i]; upper = table[i+1]; break; }
+        }
+        const r = (m - lower[0]) / (upper[0] - lower[0] || 1);
+        const getVal = (i) => (lower[i] + (upper[i] - lower[i]) * r).toFixed(1);
+        const ref = { h3:getVal(1), h50:getVal(2), h97:getVal(3), w3:getVal(4), w50:getVal(5), w97:getVal(6) };
+
+        this.updateBar('h', h, ref.h3, ref.h50, ref.h97);
+        this.updateBar('w', w, ref.w3, ref.w50, ref.w97);
+        
+        // Child BMI Status (7-18y)
+        if(ageY >= 7) { 
+           const ob = DB.cut[this.data.gender][ageY];
+           bmiTag.style.display = 'inline-block';
+           if(bmi > ob) {bmiTag.textContent="肥胖";bmiTag.className="status-badge bg-bad";}
+           else if(bmi < 14) {bmiTag.textContent="過輕?";bmiTag.className="status-badge bg-warn";}
+           else {bmiTag.textContent="適中";bmiTag.className="status-badge bg-ok";}
+        } else bmiTag.style.display = 'none';
+        
+        // Share Card Data
+        document.getElementById('sc-h').textContent = h;
+        document.getElementById('sc-w').textContent = w;
+        document.getElementById('sc-h-pr').textContent = document.getElementById('h-pr').textContent;
+        document.getElementById('sc-w-pr').textContent = document.getElementById('w-pr').textContent;
+    }
 
     // Water
     let water = (w<=10)? w*100 : (w<=20)? 1000+(w-10)*50 : 1500+(w-20)*20;
@@ -416,14 +447,10 @@ const app = {
     document.getElementById('result-panel').style.display = 'block';
     
     // Copy Text
-    this.data.copy = `Growth: ${ageY}y${ageM}m ${this.data.gender}\nHt: ${h}cm (${ref.h50})\nWt: ${w}kg (${ref.w50})\nBMI: ${bmi}`;
+    let bmiTxt = bmiTag.style.display !== 'none' ? `(${bmiTag.textContent})` : '';
+    this.data.copy = `Growth: ${ageY}y${ageM}m ${this.data.gender}\nHt: ${h}cm\nWt: ${w}kg\nBMI: ${bmi} ${bmiTxt}`;
     
-    // Fill Share Card Data
     document.getElementById('sc-age').textContent = `${ageY} 歲 ${ageM} 個月`;
-    document.getElementById('sc-h').textContent = h;
-    document.getElementById('sc-w').textContent = w;
-    document.getElementById('sc-h-pr').textContent = document.getElementById('h-pr').textContent;
-    document.getElementById('sc-w-pr').textContent = document.getElementById('w-pr').textContent;
   },
 
   updateBar: function(type, val, p3, p50, p97) {
