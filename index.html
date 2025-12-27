@@ -14,6 +14,7 @@
         
         /* --- CSS Variables for Theming --- */
         :root {
+            /* Default fallback (Earth) */
             --primary-color: #8D6E63;
             --primary-hover: #6D4C41;
             --secondary-bg: #FFF3E0;
@@ -23,29 +24,7 @@
             --card-accent: #FFF8E1;
         }
 
-        /* Boy Theme */
-        body.theme-boy {
-            --primary-color: #42A5F5;
-            --primary-hover: #1E88E5;
-            --secondary-bg: #E3F2FD;
-            --secondary-border: #BBDEFB;
-            --text-dark: #0D47A1;
-            --bg-color: #F1F8E9;
-            --card-accent: #E1F5FE;
-        }
-
-        /* Girl Theme */
-        body.theme-girl {
-            --primary-color: #EC407A;
-            --primary-hover: #D81B60;
-            --secondary-bg: #FCE4EC;
-            --secondary-border: #F8BBD0;
-            --text-dark: #880E4F;
-            --bg-color: #FFF5F7;
-            --card-accent: #FFF0F5;
-        }
-
-        body { font-family: 'Noto Sans TC', sans-serif; background-color: var(--bg-color); transition: background-color 0.5s; }
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: var(--bg-color); transition: background-color 0.5s, color 0.5s; }
         
         .text-theme-dark { color: var(--text-dark); }
         .text-theme-primary { color: var(--primary-color); }
@@ -67,6 +46,31 @@
         
         .modal { transition: opacity 0.25s ease; }
         body.modal-active { overflow-x: hidden; overflow-y: visible !important; }
+
+        /* Color Swatch */
+        .color-swatch {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: transform 0.2s, border-color 0.2s;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .color-swatch:hover { transform: scale(1.1); }
+        .color-swatch.selected { border-color: #555; transform: scale(1.1); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
+        .color-swatch.selected::after {
+            content: '\f00c';
+            font-family: 'Font Awesome 5 Free';
+            font-weight: 900;
+            color: white;
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 16px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
 
         /* --- Improved Teeth Styling --- */
         .dental-chart {
@@ -176,7 +180,7 @@
                     兒童生長紀錄
                     <span class="text-sm font-normal text-theme-primary inline-flex items-center">| 
                         <a href="https://www.facebook.com/profile.php?id=61584059466555" target="_blank" class="hover:text-theme-primary transition-colors hover:underline ml-1">
-                            下班後的某宅羊
+                            下班後的某宅羊 V2.1
                         </a>
                     </span>
                 </h1>
@@ -238,11 +242,14 @@
                         </p>
                     </div>
                     <div class="flex gap-2">
+                        <button onclick="openThemePicker()" class="btn-secondary px-3 py-2 rounded-lg text-sm relative z-10 flex items-center gap-2">
+                            <i class="fas fa-palette text-theme-primary"></i> <span class="hidden sm:inline">更換主題</span>
+                        </button>
                         <button onclick="deleteCurrentChild()" class="text-red-400 hover:text-red-600 px-3 py-2 text-sm border border-red-200 rounded-lg bg-white relative z-10">
-                            <i class="fas fa-trash"></i> 刪除
+                            <i class="fas fa-trash"></i> <span class="hidden sm:inline">刪除</span>
                         </button>
                         <button onclick="showView('listView')" class="btn-secondary px-4 py-2 rounded-lg text-sm relative z-10">
-                            <i class="fas fa-arrow-left"></i> 返回列表
+                            <i class="fas fa-arrow-left"></i> <span class="hidden sm:inline">返回</span>
                         </button>
                     </div>
                 </div>
@@ -505,6 +512,20 @@
         </div>
     </div>
     
+    <!-- Theme Modal -->
+    <div id="themeModal" class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center z-50">
+        <div class="modal-overlay absolute w-full h-full bg-black opacity-50"></div>
+        <div class="modal-container bg-white w-11/12 md:max-w-md mx-auto rounded-lg shadow-lg z-50 overflow-y-auto transform transition-all scale-95 opacity-0">
+            <div class="modal-content py-4 text-center px-6">
+                <h3 class="text-xl font-bold text-theme-dark mb-4">選擇主題顏色</h3>
+                <div id="themeContainer" class="grid grid-cols-4 gap-6 justify-items-center mb-6 px-2">
+                    <!-- Theme swatches injected by JS -->
+                </div>
+                <button onclick="closeModal('themeModal')" class="w-full px-4 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200">取消</button>
+            </div>
+        </div>
+    </div>
+
     <div id="alertModal" class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center z-50">
         <div class="modal-overlay absolute w-full h-full bg-black opacity-50"></div>
         <div class="modal-container bg-white w-10/12 md:max-w-sm mx-auto rounded-lg shadow-lg z-50 overflow-y-auto transform transition-all scale-95 opacity-0">
@@ -532,24 +553,127 @@
     </div>
 
     <script>
-        // ... (CONSTANTS same as before) ...
+        // Updated Data Sources based on Taiwan CDC / PDF Data
+        // 0-3y: WHO Standards (No change)
+        // 3-18y: Taiwan Growth Curve (Chen & Chang, 2010) converted to LMS
+        // Format: [Month, L, M, S]
         const DATA_SOURCES = {
             boy: {
-                height: [[0,1,49.884,0.03795],[6,1,67.62,0.03265],[12,1,75.75,0.03215],[24,1,87.8,0.0323],[36,1,96.1,0.0329],[48,1,103.3,0.0336],[60,1,110.0,0.0343],[84,1,122.5,0.045],[120,1,140.5,0.05],[144,1,155.0,0.055],[168,1,168.0,0.045],[216,1,172.5,0.04]],
-                weight: [[0,0.3487,3.346,0.146],[6,0.0768,7.9,0.11],[12,0.015,9.6,0.108],[24,-0.05,12.2,0.11],[36,-0.09,14.3,0.115],[48,-0.11,16.3,0.12],[60,-0.12,18.3,0.125],[84,-0.15,23.5,0.14],[120,-0.2,35.0,0.16],[144,-0.2,48.0,0.18],[168,-0.1,60.0,0.15],[216,-0.05,65.0,0.14]],
-                head: [[0,1,34.5,0.037],[6,1,43.3,0.03],[12,1,46.1,0.028],[24,1,48.2,0.027],[36,1,49.5,0.027],[48,1,50.2,0.027],[60,1,49.7,0.027]]
+                height: [
+                    // 0-2歲 (WHO)
+                    [0, 1, 49.9, 0.038], [6, 1, 67.6, 0.033], [12, 1, 75.7, 0.032], [24, 1, 87.8, 0.032],
+                    // 3歲以上 (Taiwan PDF Data)
+                    [36, 1, 96.1, 0.039],
+                    [48, 1, 103.5, 0.040],
+                    [60, 1, 110.0, 0.042],
+                    [72, 1, 115.6, 0.043], // 6歲
+                    [84, 1, 121.2, 0.044],
+                    [96, 1, 126.8, 0.044],
+                    [108, 1, 131.8, 0.043],
+                    [120, 1, 136.5, 0.046], // 10歲
+                    [132, 1, 142.0, 0.053],
+                    [144, 1, 148.8, 0.056],
+                    [156, 1, 156.9, 0.048],
+                    [168, 1, 163.7, 0.040], // 14歲
+                    [180, 1, 167.6, 0.036],
+                    [192, 1, 170.0, 0.033],
+                    [204, 1, 171.5, 0.031], // 17歲
+                    [216, 1, 172.0, 0.031]  // 18歲 (延伸推估)
+                ],
+                weight: [
+                    // 0-2歲 (WHO)
+                    [0, 0.3487, 3.3, 0.146], [6, 0.0768, 7.9, 0.11], [12, 0.015, 9.6, 0.108], [24, -0.05, 12.2, 0.11],
+                    // 3歲以上 (Taiwan PDF Data)
+                    [36, 0, 14.3, 0.122],
+                    [48, 0, 16.3, 0.132],
+                    [60, 0, 18.3, 0.140],
+                    [72, 0, 20.9, 0.177], // 6歲
+                    [84, 0, 23.6, 0.205],
+                    [96, 0, 26.3, 0.225],
+                    [108, 0, 28.8, 0.229],
+                    [120, 0, 31.5, 0.230], // 10歲
+                    [132, 0, 35.3, 0.234],
+                    [144, 0, 40.3, 0.224],
+                    [156, 0, 46.5, 0.206],
+                    [168, 0, 52.5, 0.185], // 14歲
+                    [180, 0, 56.5, 0.169],
+                    [192, 0, 59.0, 0.157],
+                    [204, 0, 61.0, 0.144], // 17歲
+                    [216, 0, 62.0, 0.140]  // 18歲 (延伸推估)
+                ],
+                head: [
+                    // 頭圍數據維持原樣 (通常主要監測至 5 歲)
+                    [0, 1, 34.5, 0.037], [6, 1, 43.3, 0.03], [12, 1, 46.1, 0.028], 
+                    [24, 1, 48.2, 0.027], [36, 1, 49.5, 0.027], [48, 1, 50.2, 0.027], [60, 1, 49.7, 0.027]
+                ]
             },
             girl: {
-                height: [[0,1,49.1,0.0379],[6,1,65.7,0.033],[12,1,74.0,0.033],[24,1,86.4,0.033],[36,1,95.1,0.034],[48,1,102.7,0.035],[60,1,109.4,0.036],[84,1,121.0,0.045],[120,1,141.0,0.05],[144,1,153.0,0.05],[168,1,159.0,0.045],[216,1,160.0,0.04]],
-                weight: [[0,0.38,3.2,0.14],[6,0.07,7.3,0.11],[12,0.02,8.9,0.11],[24,-0.06,11.5,0.12],[36,-0.1,13.9,0.13],[48,-0.13,16.1,0.135],[60,-0.15,18.2,0.14],[84,-0.18,23.0,0.15],[120,-0.2,34.0,0.18],[144,-0.15,46.0,0.18],[168,-0.1,53.0,0.16],[216,-0.05,55.0,0.15]],
-                head: [[0,1,33.9,0.035],[6,1,42.2,0.03],[12,1,44.9,0.028],[24,1,47.2,0.027],[36,1,48.5,0.027],[48,1,49.3,0.027],[60,1,49.7,0.027]]
+                height: [
+                    // 0-2歲 (WHO)
+                    [0, 1, 49.1, 0.038], [6, 1, 65.7, 0.033], [12, 1, 74.0, 0.033], [24, 1, 86.4, 0.033],
+                    // 3歲以上 (Taiwan PDF Data)
+                    [36, 1, 95.1, 0.040],
+                    [48, 1, 102.7, 0.042],
+                    [60, 1, 109.4, 0.044],
+                    [72, 1, 114.8, 0.044], // 6歲
+                    [84, 1, 120.3, 0.043],
+                    [96, 1, 125.8, 0.045],
+                    [108, 1, 131.3, 0.049],
+                    [120, 1, 137.5, 0.051], // 10歲
+                    [132, 1, 144.5, 0.047],
+                    [144, 1, 150.5, 0.040],
+                    [156, 1, 154.5, 0.035],
+                    [168, 1, 156.8, 0.035], // 14歲
+                    [180, 1, 157.9, 0.035],
+                    [192, 1, 158.7, 0.034],
+                    [204, 1, 159.3, 0.032], // 17歲
+                    [216, 1, 159.5, 0.032]  // 18歲 (延伸推估)
+                ],
+                weight: [
+                    // 0-2歲 (WHO)
+                    [0, 0.38, 3.2, 0.14], [6, 0.07, 7.3, 0.11], [12, 0.02, 8.9, 0.11], [24, -0.06, 11.5, 0.12],
+                    // 3歲以上 (Taiwan PDF Data)
+                    [36, 0, 13.9, 0.131],
+                    [48, 0, 16.1, 0.144],
+                    [60, 0, 18.2, 0.156],
+                    [72, 0, 20.5, 0.177], // 6歲
+                    [84, 0, 22.8, 0.195],
+                    [96, 0, 25.4, 0.211],
+                    [108, 0, 28.2, 0.222],
+                    [120, 0, 31.8, 0.211], // 10歲
+                    [132, 0, 36.9, 0.189],
+                    [144, 0, 41.7, 0.173],
+                    [156, 0, 45.4, 0.159],
+                    [168, 0, 48.1, 0.151], // 14歲
+                    [180, 0, 49.6, 0.148],
+                    [192, 0, 50.5, 0.144],
+                    [204, 0, 51.0, 0.143], // 17歲
+                    [216, 0, 51.5, 0.143]  // 18歲 (延伸推估)
+                ],
+                head: [
+                    // 頭圍數據維持原樣
+                    [0, 1, 33.9, 0.035], [6, 1, 42.2, 0.03], [12, 1, 44.9, 0.028], 
+                    [24, 1, 47.2, 0.027], [36, 1, 48.5, 0.027], [48, 1, 49.3, 0.027], [60, 1, 49.7, 0.027]
+                ]
             }
+        };
+
+        // --- Morandi Themes (Updated Names) ---
+        const MORANDI_THEMES = {
+            'earth': { name: '暖心善良棕', vars: { '--primary-color': '#8D6E63', '--primary-hover': '#6D4C41', '--secondary-bg': '#FFF3E0', '--secondary-border': '#FFE0B2', '--text-dark': '#5D4037', '--bg-color': '#fdfbf7', '--card-accent': '#FFF8E1' } },
+            'ocean': { name: '冰雪聰明藍', vars: { '--primary-color': '#5C869C', '--primary-hover': '#456D82', '--secondary-bg': '#E6F0F5', '--secondary-border': '#C2D6E0', '--text-dark': '#385566', '--bg-color': '#F5F9FB', '--card-accent': '#EBF5FA' } },
+            'rose':  { name: '活潑可愛粉', vars: { '--primary-color': '#C86B76', '--primary-hover': '#A64D58', '--secondary-bg': '#FAEFF0', '--secondary-border': '#EBC5CA', '--text-dark': '#7A3840', '--bg-color': '#FFFAFA', '--card-accent': '#FFF0F2' } },
+            'sage':  { name: '健康活力綠', vars: { '--primary-color': '#739F82', '--primary-hover': '#577D64', '--secondary-bg': '#EDF5EF', '--secondary-border': '#C5DCCB', '--text-dark': '#3A5743', '--bg-color': '#F7FBF8', '--card-accent': '#E8F5EB' } },
+            'clay':  { name: '熱情洋溢紅', vars: { '--primary-color': '#A66B58', '--primary-hover': '#855140', '--secondary-bg': '#F7ECEA', '--secondary-border': '#DCC0B7', '--text-dark': '#633B2E', '--bg-color': '#FFFAF8', '--card-accent': '#FBE9E7' } },
+            'lilac': { name: '優雅氣質紫', vars: { '--primary-color': '#9B8EA9', '--primary-hover': '#7A6D88', '--secondary-bg': '#F3F0F6', '--secondary-border': '#DAD2E3', '--text-dark': '#534861', '--bg-color': '#FAFAFD', '--card-accent': '#F3EBF9' } },
+            'mustard':{ name:'陽光開朗黃', vars: { '--primary-color': '#C7A655', '--primary-hover': '#A3843D', '--secondary-bg': '#FDFBEB', '--secondary-border': '#EBE0BE', '--text-dark': '#6B5726', '--bg-color': '#FFFCF5', '--card-accent': '#FEFBE0' } },
+            'slate': { name: '沉穩帥氣灰', vars: { '--primary-color': '#607D8B', '--primary-hover': '#455A64', '--secondary-bg': '#ECEFF1', '--secondary-border': '#CFD8DC', '--text-dark': '#37474F', '--bg-color': '#F9FAFB', '--card-accent': '#ECEFF1' } }
         };
 
         const ADVICE_DATA = [
             { min: 0, max: 0.25, list: ["新生兒睡眠時間長，注意睡姿安全，避免趴睡。", "溢奶是正常的生理現象，喝奶後記得拍嗝，但不強求。", "視力發展初期，黑白圖卡是不錯的刺激工具。"], title: "0-3個月 新生兒適應期" },
             { min: 0.25, max: 0.5, list: ["小朋友開始嘗試翻身囉！注意床邊護欄，避免跌落。", "脖子變硬挺了，可以趴著抬頭看看世界。", "口水變多，喜歡吃手，這是口腔期的探索表現。"], title: "4-6個月 脖頸硬挺期" },
-            { min: 0.5, max: 1, list: ["七坐八爬，家中危險物品要收好，插座加上防護蓋。", "開始長牙可能會歡必霸，給予固齒器舒緩不適。", "副食品多樣化嘗試，建立免疫耐受性，不需延後給予高致敏食物。"], title: "7-12個月 坐爬探索期" },
+            { min: 0.5, max: 1, list: ["七坐八爬，家中危險物品要收好，插座加上防護蓋。", "開始長牙可能會歡必霸，給予固齒器舒緩不適。", "副食品少量多樣化嘗試，建立免疫耐受性，記得也要補充水份。"], title: "7-12個月 坐爬探索期" },
             { min: 1, max: 1.5, list: ["學步期搖搖晃晃，居家防撞措施不能少。", "開始模仿大人說話，多跟小朋友聊天念繪本，並讓小朋友看大人發音時的口型。", "每半年記得帶小朋友去塗氟，保護乳牙健康。"], title: "1-1.5歲 學步期" },
             { min: 1.5, max: 3, list: ["處於『不要不要』的叛逆期，試著給予選擇題代替是非題。", "精力旺盛，多帶去公園放電，有助於晚上睡眠。", "可開始嘗試白天的如廁訓練，但不要給予太大壓力。"], title: "1.5-3歲 幼兒叛逆期" },
             { min: 3, max: 5, list: ["進入幼兒園，初期容易感冒，這是建立免疫系統的過程。", "想像力豐富，喜歡扮演遊戲，陪孩子演戲是很好的互動。", "精細動作進步中，可以玩積木、畫畫訓練小手肌肉。"], title: "3-5歲 學齡前(幼兒園)" },
@@ -558,7 +682,7 @@
             { min: 10, max: 12, gender: 'girl', list: ["女孩青春期較早，胸部發育是第一徵兆，提醒孩子這是正常的。", "生長衝刺期開始，確保充足睡眠與鈣質攝取。", "多運動刺激生長，跳繩是不錯的選擇。"], title: "10-12歲 青春期初期(女)" },
             { min: 10, max: 12, gender: 'boy', list: ["男孩發育較晚，此階段儲備能量，多做負重運動存骨本。", "若睪丸明顯變大，代表青春期悄悄開始囉。", "均衡飲食，避免肥胖影響性早熟。"], title: "10-12歲 儲備期(男)" },
             { min: 12, max: 15, gender: 'girl', list: ["月經初潮通常發生在此階段，身高增加速度會減緩。", "注意鐵質攝取（如紅肉、深綠蔬菜）預防貧血。", "保持自信，接納身體的變化，心理健康很重要。"], title: "12-15歲 青春期成熟(女)" },
-            { min: 12, max: 15, gender: 'boy', list: ["變聲、喉結出現，身高進入飆速期，一年可長10公分以上！", "食量大增，需補充足夠蛋白質與鈣質，避免吃垃圾食物。", "運動量大，注意運動傷害防護。"], title: "12-15歲 青春期衝刺(男)" },
+            { min: 12, max: 15, gender: 'boy', list: ["變聲、喉結出現，身高進入飆速期，可以每月測量身高！", "食量大增，需補充足夠蛋白質與鈣質，避免吃垃圾食物。", "運動量大，注意運動傷害防護。"], title: "12-15歲 青春期衝刺(男)" },
             { min: 15, max: 18, gender: 'girl', list: ["生長板逐漸閉合，身高趨於定型，維持良好體態。", "規律運動不僅維持身材，也能釋放課業壓力。", "建立正確的身體意象，不盲目追求過瘦。"], title: "15-18歲 青少年(女)" },
             { min: 15, max: 18, gender: 'boy', list: ["生長速度減緩，但肌肉量持續增加，體型變壯。", "部分男孩到高中畢業前仍有長高空間，作息要正常。", "培養一種喜愛的運動習慣，受用終身。"], title: "15-18歲 青少年(男)" }
         ];
@@ -667,7 +791,7 @@
             ]},
             { ageMin: 12, ageMax: 18, list: [
                 { title: "三國得志", tags: ["三人","策略"] }, { title: "貓島奇緣", tags: ["板塊","策略"] }, { title: "熊熊公園", tags: ["板塊","拼放"] },
-                { title: "平衡獸", tags: ["平衡","科技"] }, { title: "波多黎各", tags: ["策略","經營"] },
+                { title: "平衡獸", tags: ["平衡","科技"] }, { title: "波多黎各", tags: ["策略","經營"] }, { title: "郎中闖江湖", tags: ["運氣","策略"] },
                 { title: "卡坦島", tags: ["策略","交易"] }, { title: "瘟疫危機", tags: ["合作","策略"] },
                 { title: "妙語說書人", tags: ["聯想"] }, { title: "截碼戰", tags: ["團隊","推理"] },
                 { title: "蓋亞計劃", tags: ["重度策略"] }, { title: "鐮刀戰爭", tags: ["區域控制"] }, { title: "電力公司", tags: ["競標","經營"] },
@@ -994,12 +1118,29 @@
         }
 
         // --- UI FUNCTIONS ---
-        function applyTheme(gender) {
-            document.body.classList.remove('theme-boy', 'theme-girl');
-            if(gender==='boy') document.body.classList.add('theme-boy');
-            else if(gender==='girl') document.body.classList.add('theme-girl');
+        function applyTheme(child) {
+            // Priority: child.theme > child.gender (fallback)
+            let themeKey = child.theme;
+            if (!themeKey || !MORANDI_THEMES[themeKey]) {
+                themeKey = child.gender === 'boy' ? 'ocean' : 'rose';
+            }
+            
+            const theme = MORANDI_THEMES[themeKey];
+            const root = document.documentElement;
+            
+            // Set CSS Variables
+            for (const [key, value] of Object.entries(theme.vars)) {
+                root.style.setProperty(key, value);
+            }
         }
-        function resetTheme() { document.body.classList.remove('theme-boy', 'theme-girl'); }
+        function resetTheme() { 
+            // Reset to default earth tones for list view
+            const theme = MORANDI_THEMES['earth'];
+            const root = document.documentElement;
+            for (const [key, value] of Object.entries(theme.vars)) {
+                root.style.setProperty(key, value);
+            }
+        }
 
         function showView(viewName) {
             document.getElementById('listView').classList.add('hidden');
@@ -1043,8 +1184,10 @@
             if (age < 0) { showAlert('日期錯誤', '出生日期不能晚於今天。'); return; }
             if (age > 99) { showAlert('年齡限制', '僅支援 0-99 歲的生長紀錄。'); return; }
             
-            // Migration: Add weeks to data structure
-            appData.children.push({ id: Date.now().toString(), name, gender, dob, weeks: weeks, records: [] });
+            // Default theme based on gender
+            const defaultTheme = gender === 'boy' ? 'ocean' : 'rose';
+
+            appData.children.push({ id: Date.now().toString(), name, gender, dob, weeks: weeks, theme: defaultTheme, records: [] });
             saveData(); closeModal('addChildModal'); document.getElementById('addChildForm').reset(); renderChildList();
         }
 
@@ -1054,13 +1197,15 @@
             if(!child) return;
             
             showView('detailView'); // Update state inside
-            applyTheme(child.gender);
+            applyTheme(child); // Apply child specific theme
+            
             document.getElementById('detailName').innerText = child.name;
             document.getElementById('detailDob').innerText = child.dob;
             document.getElementById('detailGender').innerText = child.gender === 'boy' ? '男寶' : '女寶';
+            // Update gender tag background based on current theme primary color logic? No, keep it distinct.
             document.getElementById('detailGender').className = `px-2 py-1 rounded text-xs font-bold ${child.gender === 'boy' ? 'bg-blue-100 text-blue-600' : 'bg-pink-100 text-pink-500'}`;
             
-            // Age Display using Corrected Logic
+            // Age Display using Corrected Age
             const ageInfo = getEvaluatedAge(child, moment());
             document.getElementById('detailAge').innerText = ageInfo.str;
             
@@ -1106,6 +1251,48 @@
                 appData.children = appData.children.filter(c => c.id !== currentChildId);
                 saveData(); showView('listView');
             });
+        }
+
+        // --- Theme Picker Logic ---
+        function openThemePicker() {
+            const child = appData.children.find(c => c.id === currentChildId);
+            if (!child) return;
+            const container = document.getElementById('themeContainer');
+            container.innerHTML = '';
+            
+            const currentTheme = child.theme || (child.gender === 'boy' ? 'ocean' : 'rose');
+
+            for (const [key, theme] of Object.entries(MORANDI_THEMES)) {
+                const swatch = document.createElement('div');
+                swatch.className = `flex flex-col items-center gap-1`;
+                
+                const circle = document.createElement('div');
+                circle.className = `color-swatch ${key === currentTheme ? 'selected' : ''}`;
+                circle.style.backgroundColor = theme.vars['--primary-color'];
+                circle.onclick = () => selectTheme(key);
+                
+                const label = document.createElement('span');
+                label.innerText = theme.name;
+                label.className = 'text-xs text-gray-500 font-medium';
+
+                swatch.appendChild(circle);
+                swatch.appendChild(label);
+                container.appendChild(swatch);
+            }
+            openModal('themeModal');
+        }
+
+        function selectTheme(themeKey) {
+            const child = appData.children.find(c => c.id === currentChildId);
+            if (child) {
+                child.theme = themeKey;
+                saveData();
+                applyTheme(child); // Immediate apply
+                // Re-render components that might depend on theme color indirectly if needed, 
+                // but CSS var update handles most. Chart color needs update.
+                updateChart();
+            }
+            closeModal('themeModal');
         }
 
         function calculatePrediction() {
@@ -1358,7 +1545,13 @@
             const ctx = document.getElementById('growthChart').getContext('2d');
             if (chartInstance) chartInstance.destroy();
             const child = appData.children.find(c => c.id === currentChildId); if(!child) return;
-            const type = currentChartType; const maxMonths = type === 'head' ? 60 : 216; let chartColor = child.gender==='boy'?'#42A5F5':'#EC407A';
+            
+            // Get color from current theme
+            let themeKey = child.theme;
+            if (!themeKey || !MORANDI_THEMES[themeKey]) themeKey = child.gender === 'boy' ? 'ocean' : 'rose';
+            let chartColor = MORANDI_THEMES[themeKey].vars['--primary-color'];
+
+            const type = currentChartType; const maxMonths = type === 'head' ? 60 : 216;
             const d3=[], d15=[], d50=[], d85=[], d97=[]; const steps = 36;
             for (let i = 0; i <= maxMonths; i += (maxMonths/steps)) {
                 const lms = getLMS(child.gender, type, i);
