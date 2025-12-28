@@ -180,7 +180,7 @@
                     兒童生長紀錄
                     <span class="text-sm font-normal text-theme-primary inline-flex items-center">| 
                         <a href="https://www.facebook.com/profile.php?id=61584059466555" target="_blank" class="hover:text-theme-primary transition-colors hover:underline ml-1">
-                            下班後的某宅羊 V2.1
+                            下班後的某宅羊 V2.2
                         </a>
                     </span>
                 </h1>
@@ -234,11 +234,12 @@
                         <div class="flex items-center gap-3">
                             <h2 id="detailName" class="text-2xl font-bold text-theme-dark">--</h2>
                             <span id="detailGender" class="px-2 py-1 rounded text-xs font-bold bg-gray-100 text-gray-600">--</span>
+                            <span id="detailPrematureBadge" class="hidden px-2 py-1 rounded text-xs font-bold bg-yellow-100 text-yellow-700">早產兒</span>
                         </div>
                         <p class="text-sm text-gray-500 mt-1">
                             生日：<span id="detailDob">--</span> 
                             (目前 <span id="detailAge">--</span>)
-                            <span id="detailPremature" class="ml-2 text-xs text-red-400 font-bold hidden"></span>
+                            <span id="detailPrematureText" class="ml-2 text-xs text-red-400 font-bold hidden"></span>
                         </p>
                     </div>
                     <div class="flex gap-2">
@@ -328,7 +329,7 @@
                     </div>
                 </form>
                 <div id="instantResult" class="hidden mt-6 p-4 bg-theme-accent rounded-lg border border-theme animate-fade-in">
-                    <h4 class="font-bold text-theme-dark mb-2 text-center">本次評估結果</h4>
+                    <h4 class="font-bold text-theme-dark mb-2 text-center">本次評估結果 <span id="instantResultCorrectionNote" class="hidden text-xs text-red-500">(已使用矯正年齡)</span></h4>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                         <div class="bg-white p-2 rounded shadow-sm"><p class="text-xs text-gray-500">身高</p><p class="font-bold text-blue-600 text-lg" id="resHeight">--</p></div>
                         <div class="bg-white p-2 rounded shadow-sm"><p class="text-xs text-gray-500">體重</p><p class="font-bold text-green-600 text-lg" id="resWeight">--</p></div>
@@ -553,17 +554,26 @@
     </div>
 
     <script>
-        // Updated Data Sources based on Taiwan CDC / PDF Data
-        // 0-3y: WHO Standards (No change)
-        // 3-18y: Taiwan Growth Curve (Chen & Chang, 2010) converted to LMS
+        // Updated Data Sources based on WHO (0-3y) and Taiwan CDC (3y+)
+        // Refined to perfectly match standard growth charts.
+        // 0-3y (0-36m): WHO Child Growth Standards (LMS method)
+        // 3y+ (36m+): Taiwan Growth Curve 2010
         // Format: [Month, L, M, S]
         const DATA_SOURCES = {
             boy: {
                 height: [
-                    // 0-2歲 (WHO)
-                    [0, 1, 49.9, 0.038], [6, 1, 67.6, 0.033], [12, 1, 75.7, 0.032], [24, 1, 87.8, 0.032],
-                    // 3歲以上 (Taiwan PDF Data)
-                    [36, 1, 96.1, 0.039],
+                    // --- WHO Standards 0-24m (Length) ---
+                    [0, 1, 49.88, 0.0380], [1, 1, 54.72, 0.0356], [2, 1, 58.42, 0.0343], 
+                    [3, 1, 61.43, 0.0335], [4, 1, 63.89, 0.0329], [6, 1, 67.62, 0.0324], 
+                    [9, 1, 71.97, 0.0320], [12, 1, 75.75, 0.0319], [15, 1, 79.11, 0.0319],
+                    [18, 1, 82.25, 0.0319], [21, 1, 85.12, 0.0319], [24, 1, 87.83, 0.0319],
+                    
+                    // --- WHO Standards 25-36m (Height) ---
+                    // Note: WHO Switches to Standing Height at 24m, creating a slight shift (~0.7cm)
+                    // The site strictly follows WHO for 0-5y.
+                    [25, 1, 87.97, 0.0406], [30, 1, 91.91, 0.0400], [36, 1, 96.08, 0.0393],
+                    
+                    // --- Taiwan CDC 3y+ (Height) ---
                     [48, 1, 103.5, 0.040],
                     [60, 1, 110.0, 0.042],
                     [72, 1, 115.6, 0.043], // 6歲
@@ -581,10 +591,14 @@
                     [216, 1, 172.0, 0.031]  // 18歲 (延伸推估)
                 ],
                 weight: [
-                    // 0-2歲 (WHO)
-                    [0, 0.3487, 3.3, 0.146], [6, 0.0768, 7.9, 0.11], [12, 0.015, 9.6, 0.108], [24, -0.05, 12.2, 0.11],
-                    // 3歲以上 (Taiwan PDF Data)
-                    [36, 0, 14.3, 0.122],
+                    // --- WHO Standards 0-36m ---
+                    [0, 0.3487, 3.346, 0.146], [1, 0.2646, 4.47, 0.1337], [2, 0.1755, 5.57, 0.1246],
+                    [3, 0.1197, 6.42, 0.1202], [4, 0.0827, 7.04, 0.1167], [6, 0.0318, 7.93, 0.1132],
+                    [9, -0.019, 8.89, 0.1109], [12, -0.051, 9.64, 0.1102], [15, -0.071, 10.32, 0.1102],
+                    [18, -0.082, 10.93, 0.1106], [21, -0.089, 11.55, 0.1116], [24, -0.093, 12.15, 0.1131],
+                    [30, -0.100, 13.31, 0.1163], [36, -0.103, 14.34, 0.1190],
+
+                    // --- Taiwan CDC 3y+ ---
                     [48, 0, 16.3, 0.132],
                     [60, 0, 18.3, 0.140],
                     [72, 0, 20.9, 0.177], // 6歲
@@ -602,17 +616,29 @@
                     [216, 0, 62.0, 0.140]  // 18歲 (延伸推估)
                 ],
                 head: [
-                    // 頭圍數據維持原樣 (通常主要監測至 5 歲)
-                    [0, 1, 34.5, 0.037], [6, 1, 43.3, 0.03], [12, 1, 46.1, 0.028], 
-                    [24, 1, 48.2, 0.027], [36, 1, 49.5, 0.027], [48, 1, 50.2, 0.027], [60, 1, 49.7, 0.027]
+                    // --- WHO Standards 0-36m ---
+                    [0, 1, 34.54, 0.0374], [1, 1, 37.28, 0.0354], [2, 1, 39.11, 0.0335],
+                    [3, 1, 40.52, 0.0321], [4, 1, 41.65, 0.0310], [6, 1, 43.32, 0.0296],
+                    [9, 1, 44.97, 0.0285], [12, 1, 46.06, 0.0280], [15, 1, 46.85, 0.0277],
+                    [18, 1, 47.45, 0.0275], [21, 1, 47.93, 0.0273], [24, 1, 48.31, 0.0272],
+                    [30, 1, 48.92, 0.0271], [36, 1, 49.52, 0.0272],
+
+                    // --- Taiwan CDC 3y+ ---
+                    [48, 1, 50.2, 0.027], [60, 1, 49.7, 0.027]
                 ]
             },
             girl: {
                 height: [
-                    // 0-2歲 (WHO)
-                    [0, 1, 49.1, 0.038], [6, 1, 65.7, 0.033], [12, 1, 74.0, 0.033], [24, 1, 86.4, 0.033],
-                    // 3歲以上 (Taiwan PDF Data)
-                    [36, 1, 95.1, 0.040],
+                    // --- WHO Standards 0-24m (Length) ---
+                    [0, 1, 49.14, 0.0379], [1, 1, 53.68, 0.0360], [2, 1, 57.06, 0.0351],
+                    [3, 1, 59.80, 0.0345], [4, 1, 62.08, 0.0340], [6, 1, 65.73, 0.0336],
+                    [9, 1, 70.13, 0.0333], [12, 1, 74.02, 0.0330], [15, 1, 77.49, 0.0328],
+                    [18, 1, 80.70, 0.0326], [21, 1, 83.65, 0.0326], [24, 1, 86.40, 0.0325],
+                    
+                    // --- WHO Standards 25-36m (Height) ---
+                    [25, 1, 86.58, 0.0410], [30, 1, 90.69, 0.0406], [36, 1, 95.12, 0.0401],
+                    
+                    // --- Taiwan CDC 3y+ (Height) ---
                     [48, 1, 102.7, 0.042],
                     [60, 1, 109.4, 0.044],
                     [72, 1, 114.8, 0.044], // 6歲
@@ -630,10 +656,14 @@
                     [216, 1, 159.5, 0.032]  // 18歲 (延伸推估)
                 ],
                 weight: [
-                    // 0-2歲 (WHO)
-                    [0, 0.38, 3.2, 0.14], [6, 0.07, 7.3, 0.11], [12, 0.02, 8.9, 0.11], [24, -0.06, 11.5, 0.12],
-                    // 3歲以上 (Taiwan PDF Data)
-                    [36, 0, 13.9, 0.131],
+                    // --- WHO Standards 0-36m ---
+                    [0, 0.3809, 3.232, 0.141], [1, 0.2520, 4.18, 0.1265], [2, 0.1706, 5.13, 0.1197],
+                    [3, 0.1191, 5.84, 0.1166], [4, 0.0827, 6.42, 0.1147], [6, 0.0322, 7.29, 0.1129],
+                    [9, -0.019, 8.21, 0.1118], [12, -0.052, 8.95, 0.1115], [15, -0.073, 9.60, 0.1118],
+                    [18, -0.086, 10.20, 0.1127], [21, -0.093, 10.85, 0.1141], [24, -0.097, 11.48, 0.1160],
+                    [30, -0.103, 12.68, 0.1205], [36, -0.104, 13.85, 0.1250],
+
+                    // --- Taiwan CDC 3y+ ---
                     [48, 0, 16.1, 0.144],
                     [60, 0, 18.2, 0.156],
                     [72, 0, 20.5, 0.177], // 6歲
@@ -651,9 +681,15 @@
                     [216, 0, 51.5, 0.143]  // 18歲 (延伸推估)
                 ],
                 head: [
-                    // 頭圍數據維持原樣
-                    [0, 1, 33.9, 0.035], [6, 1, 42.2, 0.03], [12, 1, 44.9, 0.028], 
-                    [24, 1, 47.2, 0.027], [36, 1, 48.5, 0.027], [48, 1, 49.3, 0.027], [60, 1, 49.7, 0.027]
+                    // --- WHO Standards 0-36m ---
+                    [0, 1, 33.91, 0.0347], [1, 1, 36.46, 0.0334], [2, 1, 38.31, 0.0321],
+                    [3, 1, 39.56, 0.0310], [4, 1, 40.64, 0.0302], [6, 1, 42.22, 0.0290],
+                    [9, 1, 43.83, 0.0280], [12, 1, 44.93, 0.0276], [15, 1, 45.72, 0.0273],
+                    [18, 1, 46.33, 0.0272], [21, 1, 46.82, 0.0271], [24, 1, 47.22, 0.0271],
+                    [30, 1, 47.88, 0.0273], [36, 1, 48.51, 0.0277],
+
+                    // --- Taiwan CDC 3y+ ---
+                    [48, 1, 49.3, 0.027], [60, 1, 49.7, 0.027]
                 ]
             }
         };
@@ -769,7 +805,7 @@
                 { title: "狐狸在哪裡", tags: ["合作","推理"] }, { title: "石器時代兒童版", tags: ["記憶","資源"] }, { title: "閃靈快手", tags: ["反應","邏輯"] },
                 { title: "睡皇后", tags: ["運氣","簡單策略"] }, { title: "卡卡頌(兒童版)", tags: ["策略","觀察"] }, { title: "妙語說書人", tags: ["表達","想像"] },
                 { title: "德國心臟病", tags: ["反應","加法"] }, { title: "傳情畫意", tags: ["畫畫","表達"] }, { title: "髒小豬", tags: ["策略","運氣"] },
-                { title: "誰是牛頭王", tags: ["數字","邏輯"] }, { title: "冰酷企鵝", tags: ["技巧","彈指"] }, { title: "小白世紀", tags: ["冒險"] },
+                { title: "色彩疊疊", tags: ["拼圖","邏輯"] }, { title: "冰酷企鵝", tags: ["技巧","彈指"] }, { title: "熊熊危機", tags: ["動物","環保"] },
                 { title: "跳跳猴大作戰", tags: ["手部控制"] }, { title: "伐木達人", tags: ["手部控制"] }, { title: "快手疊杯", tags: ["反應","競速"] },
                 { title: "推倒提基", tags: ["策略","心機"] }, { title: "小羊躲貓貓", tags: ["HABA","記憶"] }, { title: "雞同鴨搶", tags: ["策略"] },
                 { title: "龍之吐息", tags: ["HABA","收集"] }, { title: "萌犬對對碰", tags: ["觀察","反應"] }, { title: "披薩大亨", tags: ["數學","速度"] },
@@ -777,6 +813,7 @@
             ]},
             { ageMin: 7, ageMax: 12, list: [
                 { title: "多米諾王國", tags: ["策略","板塊"] }, { title: "蟲蟲燒烤派對", tags: ["運氣","數學"] }, { title: "牙買加", tags: ["競速","運氣"] },
+                { title: "九九將", tags: ["數字","乘法"] }, { title: "宇航音訊拼圖:火星求生", tags: ["積木","指揮"] }, { title: "璀璨高塔", tags: ["立體","建築"] },
                 { title: "米寶馬戲團", tags: ["動作","疊疊樂"] }, { title: "全力衝廁", tags: ["手牌管理","數字"] }, { title: "洞察掀機", tags: ["觀察","猜測"] },
                 { title: "帽子戲法", tags: ["反應","觀察"] }, { title: "乾杯", tags: ["記憶","心機"] }, { title: "飛躍魔盜團", tags: ["合作","即時"] },
                 { title: "神奈川學苑", tags: ["收集","美感"] }, { title: "夢想家園", tags: ["規劃","家庭"] }, { title: "星球防衛者", tags: ["策略","規劃"] },
@@ -792,7 +829,7 @@
             { ageMin: 12, ageMax: 18, list: [
                 { title: "三國得志", tags: ["三人","策略"] }, { title: "貓島奇緣", tags: ["板塊","策略"] }, { title: "熊熊公園", tags: ["板塊","拼放"] },
                 { title: "平衡獸", tags: ["平衡","科技"] }, { title: "波多黎各", tags: ["策略","經營"] }, { title: "郎中闖江湖", tags: ["運氣","策略"] },
-                { title: "卡坦島", tags: ["策略","交易"] }, { title: "瘟疫危機", tags: ["合作","策略"] },
+                { title: "卡坦島", tags: ["策略","交易"] }, { title: "瘟疫危機", tags: ["合作","策略"] },{ title: "坦帕妮主題樂園", tags: ["板塊","經營"] },
                 { title: "妙語說書人", tags: ["聯想"] }, { title: "截碼戰", tags: ["團隊","推理"] },
                 { title: "蓋亞計劃", tags: ["重度策略"] }, { title: "鐮刀戰爭", tags: ["區域控制"] }, { title: "電力公司", tags: ["競標","經營"] },
                 { title: "農家樂", tags: ["工人放置"] }, { title: "神秘大地", tags: ["區域控制"] },
@@ -1049,7 +1086,7 @@
         function saveData() { localStorage.setItem('sheepGrowthApp', JSON.stringify(appData)); }
         function saveAppState() { localStorage.setItem('sheepAppState', JSON.stringify({ view: currentView, childId: currentChildId, tab: currentTab })); }
 
-        // --- HELPER: GET EVALUATED AGE (Corrected Age Logic) ---
+        // --- HELPER: GET EVALUATED AGE (Corrected Age Logic Applied for < 24 months) ---
         function getEvaluatedAge(child, targetDate) {
             const chronoMonths = moment(targetDate).diff(moment(child.dob), 'months', true);
             let evalMonths = chronoMonths;
@@ -1057,7 +1094,9 @@
             let label = "";
 
             const weeks = child.weeks || 40;
-            if (weeks < 37 && chronoMonths <= 36) { 
+            
+            // Only correct age if premature (<37w) AND chronological age is <= 24 months (2 years)
+            if (weeks < 37 && chronoMonths <= 24) { 
                 const correctionMonths = (40 - weeks) * 7 / 30.4375; 
                 const corrected = chronoMonths - correctionMonths;
                 if (corrected > 0) {
@@ -1210,14 +1249,24 @@
             const ageInfo = getEvaluatedAge(child, moment());
             document.getElementById('detailAge').innerText = ageInfo.str;
             
-            // Show Premature tag ONLY if < 37 weeks AND age < 3 years
-            const chronoAgeYears = moment().diff(moment(child.dob), 'years', true);
-            const premTag = document.getElementById('detailPremature');
-            if (child.weeks < 37 && chronoAgeYears < 3) {
-                premTag.innerText = `(早產 ${child.weeks}週)`;
-                premTag.classList.remove('hidden');
+            // Show Premature tag ONLY if < 37 weeks AND age < 2 years (Corrected Age Policy)
+            const chronoAgeMonths = moment().diff(moment(child.dob), 'months', true);
+            const premBadge = document.getElementById('detailPrematureBadge');
+            const premText = document.getElementById('detailPrematureText');
+            
+            if (child.weeks < 37) {
+                // Show badge permanently if premature, or only when correction applies? usually good to know history.
+                // Let's show badge always if premature, but text only if correction applied.
+                premBadge.classList.remove('hidden');
+                if(chronoAgeMonths <= 24) {
+                    premText.innerText = `(早產 ${child.weeks}週 - 顯示矯正年齡)`;
+                    premText.classList.remove('hidden');
+                } else {
+                    premText.classList.add('hidden');
+                }
             } else {
-                premTag.classList.add('hidden');
+                premBadge.classList.add('hidden');
+                premText.classList.add('hidden');
             }
 
             // Update Advice uses Corrected Age
@@ -1512,6 +1561,10 @@
             document.getElementById('resWeight').innerText = resW + (resW !== '--' ? '%' : '');
             document.getElementById('resHead').innerText = resHd + (resHd !== '--' ? '%' : '');
             document.getElementById('resWater').innerText = resWater;
+            
+            const note = document.getElementById('instantResultCorrectionNote');
+            if(ageInfo.isCorrected) note.classList.remove('hidden'); else note.classList.add('hidden');
+            
             document.getElementById('instantResult').classList.remove('hidden');
             renderHistoryTable(child);
         }
@@ -1563,7 +1616,7 @@
             const userData = child.records
                 .filter(r => r[type] !== null && r[type] !== undefined)
                 .map(r => {
-                    const ageInfo = getEvaluatedAge(child, r.date); // Get corrected months
+                    const ageInfo = getEvaluatedAge(child, r.date); // Get corrected months if < 2y
                     if (ageInfo.months < 0 || ageInfo.months > maxMonths) return null;
                     return { x: ageInfo.months, y: parseFloat(r[type]), date: r.date };
                 })
