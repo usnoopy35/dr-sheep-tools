@@ -1605,11 +1605,35 @@
             if (!themeKey || !MORANDI_THEMES[themeKey]) themeKey = child.gender === 'boy' ? 'ocean' : 'rose';
             let chartColor = MORANDI_THEMES[themeKey].vars['--primary-color'];
 
-            const type = currentChartType; const maxMonths = type === 'head' ? 60 : 216;
-            const d3=[], d15=[], d50=[], d85=[], d97=[]; const steps = 36;
-            for (let i = 0; i <= maxMonths; i += (maxMonths/steps)) {
+            const type = currentChartType;
+            
+            // --- X-Axis Logic Modification Start ---
+            // Calculate current age to determine mode
+            const currentAgeMonths = moment().diff(moment(child.dob), 'months', true);
+            const isBabyMode = currentAgeMonths < 24; // Under 2 years
+
+            let maxMonths;
+            if (isBabyMode) {
+                // Under 2 years: Max X = 24 months
+                maxMonths = 24;
+            } else {
+                // Over 2 years: Max X = 18 years (216 months)
+                // Exception: Head circumference data typically ends at 5 years (60 months)
+                maxMonths = (type === 'head') ? 60 : 216;
+            }
+            // --- X-Axis Logic Modification End ---
+
+            const d3=[], d15=[], d50=[], d85=[], d97=[]; 
+            // Increase resolution for smoother curves if needed, or adjust steps based on range
+            const stepSize = isBabyMode ? 1 : 3; // Calculate points every 1 month or 3 months
+            
+            for (let i = 0; i <= maxMonths; i += stepSize) {
                 const lms = getLMS(child.gender, type, i);
-                if (lms) { d3.push({x:i,y:getValFromZ(-1.88,lms.L,lms.M,lms.S)}); d50.push({x:i,y:getValFromZ(0,lms.L,lms.M,lms.S)}); d97.push({x:i,y:getValFromZ(1.88,lms.L,lms.M,lms.S)}); }
+                if (lms) { 
+                    d3.push({x:i,y:getValFromZ(-1.88,lms.L,lms.M,lms.S)}); 
+                    d50.push({x:i,y:getValFromZ(0,lms.L,lms.M,lms.S)}); 
+                    d97.push({x:i,y:getValFromZ(1.88,lms.L,lms.M,lms.S)}); 
+                }
             }
             
             // User Data Points: Use CORRECTED AGE
@@ -1617,12 +1641,70 @@
                 .filter(r => r[type] !== null && r[type] !== undefined)
                 .map(r => {
                     const ageInfo = getEvaluatedAge(child, r.date); // Get corrected months if < 2y
-                    if (ageInfo.months < 0 || ageInfo.months > maxMonths) return null;
+                    // if (ageInfo.months < 0) return null; // Don't filter max here, let chart clip it or show it
                     return { x: ageInfo.months, y: parseFloat(r[type]), date: r.date };
                 })
                 .filter(d => d !== null);
 
-            chartInstance = new Chart(ctx, { type: 'line', data: { datasets: [{ label: '小朋友紀錄', data: userData, backgroundColor: chartColor, borderColor: chartColor, pointRadius: 6, showLine: false, type: 'scatter' }, { label: '97%', data: d97, borderColor: '#ef9a9a', borderWidth: 1, pointRadius: 0, fill: false, tension: 0.4 }, { label: '50%', data: d50, borderColor: '#81c784', borderWidth: 2, pointRadius: 0, fill: false, tension: 0.4 }, { label: '3%', data: d3, borderColor: '#ef9a9a', borderWidth: 1, pointRadius: 0, fill: false, tension: 0.4 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { type: 'linear', max: maxMonths } } } });
+            chartInstance = new Chart(ctx, { 
+                type: 'line', 
+                data: { 
+                    datasets: [
+                        { label: '小朋友紀錄', data: userData, backgroundColor: chartColor, borderColor: chartColor, pointRadius: 6, showLine: false, type: 'scatter' }, 
+                        { label: '97%', data: d97, borderColor: '#ef9a9a', borderWidth: 1, pointRadius: 0, fill: false, tension: 0.4 }, 
+                        { label: '50%', data: d50, borderColor: '#81c784', borderWidth: 2, pointRadius: 0, fill: false, tension: 0.4 }, 
+                        { label: '3%', data: d3, borderColor: '#ef9a9a', borderWidth: 1, pointRadius: 0, fill: false, tension: 0.4 }
+                    ] 
+                }, 
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    scales: { 
+                        x: { 
+                            type: 'linear', 
+                            max: maxMonths,
+                            ticks: {
+                                stepSize: isBabyMode ? 1 : 12,
+                                callback: function(value) {
+                                    if (isBabyMode) {
+                                        return value + 'm'; // Month view
+                                    } else {
+                                        // Year view: only show whole years
+                                        if (value % 12 === 0) return (value / 12) + '歲';
+                                        return '';
+                                    }
+                                }
+                            }
+                        } 
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y;
+                                    }
+                                    // Add date to tooltip for user data
+                                    if (context.raw.date) {
+                                        label += ` (${context.raw.date})`;
+                                    }
+                                    return label;
+                                },
+                                title: function(tooltipItems) {
+                                    const val = tooltipItems[0].parsed.x;
+                                    const y = Math.floor(val/12);
+                                    const m = Math.round(val%12);
+                                    return `${y}歲${m}個月`;
+                                }
+                            }
+                        }
+                    }
+                } 
+            });
         }
 
         // Modals
