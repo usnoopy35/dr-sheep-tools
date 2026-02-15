@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>兒童生長紀錄 | 下班後的某宅羊</title>
-    <link rel="icon" href="https://duk.tw/X9d3qU.png">
+    <title>兒童生長紀錄 | 下班後的某宅羊 (牙齒+疫苗紀錄版)</title>
+    <!-- Logo Updated -->
+    <link rel="icon" href="https://emojigraph.org/media/microsoft/ewe_1f411.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
@@ -80,6 +81,7 @@
             align-items: center;
             padding: 20px 0;
             overflow-x: auto; /* Handle small screens */
+            user-select: none;
         }
 
         .dental-arch {
@@ -101,11 +103,17 @@
             align-items: center;
             justify-content: center;
             transform-origin: center center;
-            width: 24px;
-            height: 40px;
-            transition: all 0.5s;
+            width: 30px; /* Wider for touch targets */
+            height: 44px;
+            transition: all 0.3s;
+            cursor: pointer; /* Interaction cursor */
         }
         
+        .tooth-container:hover {
+            transform: scale(1.15) !important; /* Keep rotation but scale up */
+            z-index: 50;
+        }
+
         .tooth-mark {
             width: 14px;
             height: 14px;
@@ -115,24 +123,25 @@
             margin: 1px;
             transition: 0.3s;
             box-shadow: inset 1px 1px 2px rgba(0,0,0,0.05);
+            position: relative;
         }
 
         .tooth-mark.primary { width: 16px; height: 16px; border-radius: 6px; }
         .tooth-mark.permanent { width: 20px; height: 20px; border-radius: 4px; }
 
-        /* States */
+        /* --- States (System Estimated) --- */
         .tooth-mark.primary.erupted {
-            background-color: #fff;
+            background-color: rgba(255, 255, 255, 0.7); /* Slightly transparent */
             border: 2px solid #81C784;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transform: scale(1.1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transform: scale(1.05);
         }
         
         .tooth-mark.permanent.erupted {
-            background-color: #FFF9C4;
+            background-color: rgba(255, 249, 196, 0.7);
             border: 2px solid #FBC02D;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transform: scale(1.1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transform: scale(1.05);
             z-index: 10;
         }
 
@@ -140,6 +149,39 @@
             background-color: transparent;
             border: 1px dashed #ccc;
             opacity: 0.3;
+        }
+
+        /* --- States (User Recorded - Override) --- */
+        .tooth-mark.recorded {
+            /* Solid colors for user records */
+            box-shadow: 0 0 0 2px var(--primary-color), 0 3px 6px rgba(0,0,0,0.2);
+            z-index: 20;
+        }
+        .tooth-mark.primary.erupted.recorded {
+            background-color: #fff; /* Solid white */
+            border-color: #4CAF50; /* Solid green border */
+        }
+        .tooth-mark.permanent.erupted.recorded {
+            background-color: #FFF9C4; /* Solid yellow */
+            border-color: #FBC02D;
+        }
+        
+        /* Recorded Indicator Badge */
+        .tooth-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            width: 12px;
+            height: 12px;
+            font-size: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 30;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
         }
 
         .arch-label {
@@ -167,6 +209,16 @@
         .item-tag.book { background-color: #e0f2fe; color: #0369a1; }
         .item-tag.game { background-color: #fef3c7; color: #b45309; }
 
+        /* Vaccine Item Interactive Style */
+        .vaccine-item {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .vaccine-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
     </style>
 </head>
 <body class="text-gray-700 min-h-screen flex flex-col">
@@ -175,12 +227,13 @@
     <header class="bg-theme-header p-4 shadow-sm sticky top-0 z-40 transition-colors duration-500">
         <div class="max-w-4xl mx-auto flex items-center justify-between">
             <div class="flex items-center gap-3 cursor-pointer" onclick="showView('listView')">
-                <img src="https://duk.tw/X9d3qU.png" alt="Logo" class="w-10 h-10 rounded-full border-2 border-white shadow-sm">
+                <!-- Logo Updated -->
+                <img src="https://emojigraph.org/media/microsoft/ewe_1f411.png" alt="Logo" class="w-10 h-10 rounded-full border-2 border-white shadow-sm bg-white p-1">
                 <h1 class="text-xl font-bold text-theme-dark flex items-center gap-2 flex-wrap">
                     兒童生長紀錄
                     <span class="text-sm font-normal text-theme-primary inline-flex items-center">| 
                         <a href="https://www.facebook.com/profile.php?id=61584059466555" target="_blank" class="hover:text-theme-primary transition-colors hover:underline ml-1">
-                            下班後的某宅羊 V2.2
+                            下班後的某宅羊 V2.5 (牙齒+疫苗紀錄版)
                         </a>
                     </span>
                 </h1>
@@ -388,12 +441,15 @@
             <!-- TAB: Vaccine -->
             <div id="content-vaccine" class="tab-content hidden card p-6">
                 <div class="flex justify-between items-center mb-4 border-b border-theme pb-2">
-                    <h3 class="font-bold text-theme-dark text-xl"><i class="fas fa-syringe mr-2 text-theme-primary"></i> 疫苗接種時程</h3>
+                    <h3 class="font-bold text-theme-dark text-xl"><i class="fas fa-syringe mr-2 text-theme-primary"></i> 疫苗接種紀錄</h3>
                 </div>
-                <div class="flex gap-2 mb-4 text-xs justify-center">
-                    <span class="flex items-center gap-1"><span class="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center text-white text-[10px]"><i class="fas fa-check"></i></span> 應已施打</span>
-                    <span class="flex items-center gap-1"><span class="w-4 h-4 rounded-full bg-yellow-400 flex items-center justify-center text-white text-[10px]"><i class="fas fa-clock"></i></span> 近期留意</span>
+                <div class="flex gap-2 mb-4 text-xs justify-center flex-wrap">
+                    <span class="flex items-center gap-1"><span class="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center text-white text-[10px]"><i class="fas fa-check"></i></span> 已完成</span>
+                    <span class="flex items-center gap-1"><span class="w-4 h-4 rounded-full bg-yellow-400 flex items-center justify-center text-white text-[10px]"><i class="fas fa-clock"></i></span> 建議補打</span>
                     <span class="flex items-center gap-1"><span class="w-4 h-4 rounded-full bg-blue-400 flex items-center justify-center text-white text-[10px]"><i class="fas fa-calendar-alt"></i></span> 未來行程</span>
+                </div>
+                <div class="p-2 bg-blue-50 text-blue-700 text-xs rounded border border-blue-100 mb-4 text-center">
+                    <i class="fas fa-info-circle mr-1"></i> 點擊疫苗項目即可輸入或修改施打日期
                 </div>
                 <div id="vaccineListContainer" class="space-y-3"></div>
                 <p class="text-xs text-center text-gray-400 mt-4">* 時程參考台灣 CDC 常規疫苗，實際接種請遵循醫師評估。</p>
@@ -402,15 +458,20 @@
              <!-- TAB: Teeth -->
              <div id="content-teeth" class="tab-content hidden card p-6">
                 <div class="flex justify-between items-center mb-4 border-b pb-2">
-                    <h3 class="font-bold text-theme-dark">🦷 牙齒生長進度</h3>
+                    <h3 class="font-bold text-theme-dark">🦷 牙齒生長紀錄</h3>
                     <div class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">目前年齡: <span id="teethAgeDisplay">--</span></div>
                 </div>
-                <div class="flex flex-wrap justify-center gap-3 mb-6 text-xs bg-gray-50 p-3 rounded-lg">
-                    <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-white border border-green-400"></span> 乳牙</div>
-                    <div class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-yellow-100 border border-yellow-400"></span> 恆牙</div>
-                    <div class="flex items-center gap-1"><span class="w-3 h-3 rounded border border-dashed border-gray-300 opacity-50"></span> 未長</div>
+                
+                <div class="flex flex-wrap justify-center gap-4 mb-4 text-xs bg-gray-50 p-3 rounded-lg border border-gray-100">
+                    <div class="font-bold text-gray-500 w-full text-center mb-1">圖例說明</div>
+                    <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-white border-2 border-green-400 opacity-50"></span> 乳牙(推估)</div>
+                    <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-white border-2 border-green-600 shadow-sm relative"><span class="absolute -top-1 -right-1 bg-theme-primary w-2 h-2 rounded-full"></span></span> 乳牙(紀錄)</div>
+                    <div class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-yellow-100 border-2 border-yellow-400 opacity-50"></span> 恆牙(推估)</div>
+                    <div class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-yellow-200 border-2 border-yellow-500 shadow-sm relative"><span class="absolute -top-1 -right-1 bg-theme-primary w-2 h-2 rounded-full"></span></span> 恆牙(紀錄)</div>
                 </div>
-                <div class="dental-chart bg-theme-accent rounded-xl border border-theme">
+
+                <div class="dental-chart bg-theme-accent rounded-xl border border-theme relative">
+                    <div class="absolute top-2 left-2 text-xs text-gray-400 bg-white px-2 py-1 rounded shadow-sm opacity-80"><i class="fas fa-hand-pointer mr-1"></i>點擊牙齒可紀錄日期</div>
                     <div class="dental-arch upper" id="jawUpper"><div class="arch-label">上排牙齒 (Upper)</div></div>
                     <div class="dental-arch lower" id="jawLower"><div class="arch-label">下排牙齒 (Lower)</div></div>
                 </div>
@@ -513,6 +574,73 @@
         </div>
     </div>
     
+    <!-- Tooth Record Modal -->
+    <div id="toothModal" class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center z-50">
+        <div class="modal-overlay absolute w-full h-full bg-black opacity-50"></div>
+        <div class="modal-container bg-white w-11/12 md:max-w-xs mx-auto rounded-lg shadow-lg z-50 overflow-y-auto transform transition-all scale-95 opacity-0">
+            <div class="modal-content py-4 px-6 text-center">
+                <div class="flex justify-between items-center pb-2 border-b mb-4">
+                    <h3 class="text-lg font-bold text-theme-dark" id="toothModalTitle">牙齒紀錄</h3>
+                    <div class="modal-close cursor-pointer" onclick="closeModal('toothModal')"><i class="fas fa-times"></i></div>
+                </div>
+                
+                <div class="space-y-4 mb-4">
+                    <input type="hidden" id="toothId">
+                    <div class="bg-gray-50 p-3 rounded-lg border border-gray-100 mb-2">
+                        <div class="text-xs text-gray-500 mb-1">部位</div>
+                        <div id="toothNameDisplay" class="font-bold text-theme-primary">--</div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1 text-left">🌱 長出日期</label>
+                        <input type="date" id="toothEruptDate" class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-theme-primary outline-none">
+                    </div>
+                    
+                    <div id="toothShedContainer">
+                        <label class="block text-sm font-bold text-gray-700 mb-1 text-left">🍂 掉落日期</label>
+                        <input type="date" id="toothShedDate" class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-theme-primary outline-none">
+                    </div>
+                </div>
+                
+                <div class="flex flex-col gap-2">
+                    <button onclick="saveToothRecord()" class="w-full py-2 btn-primary rounded-lg shadow-sm">儲存紀錄</button>
+                    <button onclick="deleteToothRecord()" class="w-full py-2 bg-red-50 text-red-400 rounded-lg hover:bg-red-100 border border-red-100 text-sm">清除此牙齒紀錄</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vaccine Record Modal -->
+    <div id="vaccineModal" class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center z-50">
+        <div class="modal-overlay absolute w-full h-full bg-black opacity-50"></div>
+        <div class="modal-container bg-white w-11/12 md:max-w-xs mx-auto rounded-lg shadow-lg z-50 overflow-y-auto transform transition-all scale-95 opacity-0">
+            <div class="modal-content py-4 px-6 text-center">
+                <div class="flex justify-between items-center pb-2 border-b mb-4">
+                    <h3 class="text-lg font-bold text-theme-dark">疫苗接種紀錄</h3>
+                    <div class="modal-close cursor-pointer" onclick="closeModal('vaccineModal')"><i class="fas fa-times"></i></div>
+                </div>
+                
+                <div class="space-y-4 mb-4">
+                    <input type="hidden" id="vaccineKey">
+                    <div class="bg-blue-50 p-3 rounded-lg border border-blue-100 mb-2">
+                        <div class="text-xs text-gray-500 mb-1">疫苗名稱</div>
+                        <div id="vaccineNameDisplay" class="font-bold text-theme-primary leading-tight">--</div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1 text-left">💉 施打日期</label>
+                        <input type="date" id="vaccineDateInput" class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-theme-primary outline-none">
+                    </div>
+                </div>
+                
+                <div class="flex flex-col gap-2">
+                    <button onclick="saveVaccineRecord()" class="w-full py-2 btn-primary rounded-lg shadow-sm">儲存紀錄</button>
+                    <button onclick="deleteVaccineRecord()" class="w-full py-2 bg-gray-100 text-gray-400 rounded-lg hover:bg-gray-200 border border-gray-200 text-sm">清除紀錄</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Theme Modal -->
     <div id="themeModal" class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center z-50">
         <div class="modal-overlay absolute w-full h-full bg-black opacity-50"></div>
@@ -555,140 +683,72 @@
 
     <script>
         // Updated Data Sources based on WHO (0-3y) and Taiwan CDC (3y+)
-        // Refined to perfectly match standard growth charts.
-        // 0-3y (0-36m): WHO Child Growth Standards (LMS method)
-        // 3y+ (36m+): Taiwan Growth Curve 2010
-        // Format: [Month, L, M, S]
         const DATA_SOURCES = {
             boy: {
                 height: [
-                    // --- WHO Standards 0-24m (Length) ---
                     [0, 1, 49.88, 0.0380], [1, 1, 54.72, 0.0356], [2, 1, 58.42, 0.0343], 
                     [3, 1, 61.43, 0.0335], [4, 1, 63.89, 0.0329], [6, 1, 67.62, 0.0324], 
                     [9, 1, 71.97, 0.0320], [12, 1, 75.75, 0.0319], [15, 1, 79.11, 0.0319],
                     [18, 1, 82.25, 0.0319], [21, 1, 85.12, 0.0319], [24, 1, 87.83, 0.0319],
-                    
-                    // --- WHO Standards 25-36m (Height) ---
-                    // Note: WHO Switches to Standing Height at 24m, creating a slight shift (~0.7cm)
-                    // The site strictly follows WHO for 0-5y.
                     [25, 1, 87.97, 0.0406], [30, 1, 91.91, 0.0400], [36, 1, 96.08, 0.0393],
-                    
-                    // --- Taiwan CDC 3y+ (Height) ---
-                    [48, 1, 103.5, 0.040],
-                    [60, 1, 110.0, 0.042],
-                    [72, 1, 115.6, 0.043], // 6歲
-                    [84, 1, 121.2, 0.044],
-                    [96, 1, 126.8, 0.044],
-                    [108, 1, 131.8, 0.043],
-                    [120, 1, 136.5, 0.046], // 10歲
-                    [132, 1, 142.0, 0.053],
-                    [144, 1, 148.8, 0.056],
-                    [156, 1, 156.9, 0.048],
-                    [168, 1, 163.7, 0.040], // 14歲
-                    [180, 1, 167.6, 0.036],
-                    [192, 1, 170.0, 0.033],
-                    [204, 1, 171.5, 0.031], // 17歲
-                    [216, 1, 172.0, 0.031]  // 18歲 (延伸推估)
+                    [48, 1, 103.5, 0.040], [60, 1, 110.0, 0.042], [72, 1, 115.6, 0.043], 
+                    [84, 1, 121.2, 0.044], [96, 1, 126.8, 0.044], [108, 1, 131.8, 0.043],
+                    [120, 1, 136.5, 0.046], [132, 1, 142.0, 0.053], [144, 1, 148.8, 0.056],
+                    [156, 1, 156.9, 0.048], [168, 1, 163.7, 0.040], [180, 1, 167.6, 0.036],
+                    [192, 1, 170.0, 0.033], [204, 1, 171.5, 0.031], [216, 1, 172.0, 0.031]
                 ],
                 weight: [
-                    // --- WHO Standards 0-36m ---
                     [0, 0.3487, 3.346, 0.146], [1, 0.2646, 4.47, 0.1337], [2, 0.1755, 5.57, 0.1246],
                     [3, 0.1197, 6.42, 0.1202], [4, 0.0827, 7.04, 0.1167], [6, 0.0318, 7.93, 0.1132],
                     [9, -0.019, 8.89, 0.1109], [12, -0.051, 9.64, 0.1102], [15, -0.071, 10.32, 0.1102],
                     [18, -0.082, 10.93, 0.1106], [21, -0.089, 11.55, 0.1116], [24, -0.093, 12.15, 0.1131],
                     [30, -0.100, 13.31, 0.1163], [36, -0.103, 14.34, 0.1190],
-
-                    // --- Taiwan CDC 3y+ ---
-                    [48, 0, 16.3, 0.132],
-                    [60, 0, 18.3, 0.140],
-                    [72, 0, 20.9, 0.177], // 6歲
-                    [84, 0, 23.6, 0.205],
-                    [96, 0, 26.3, 0.225],
-                    [108, 0, 28.8, 0.229],
-                    [120, 0, 31.5, 0.230], // 10歲
-                    [132, 0, 35.3, 0.234],
-                    [144, 0, 40.3, 0.224],
-                    [156, 0, 46.5, 0.206],
-                    [168, 0, 52.5, 0.185], // 14歲
-                    [180, 0, 56.5, 0.169],
-                    [192, 0, 59.0, 0.157],
-                    [204, 0, 61.0, 0.144], // 17歲
-                    [216, 0, 62.0, 0.140]  // 18歲 (延伸推估)
+                    [48, 0, 16.3, 0.132], [60, 0, 18.3, 0.140], [72, 0, 20.9, 0.177],
+                    [84, 0, 23.6, 0.205], [96, 0, 26.3, 0.225], [108, 0, 28.8, 0.229],
+                    [120, 0, 31.5, 0.230], [132, 0, 35.3, 0.234], [144, 0, 40.3, 0.224],
+                    [156, 0, 46.5, 0.206], [168, 0, 52.5, 0.185], [180, 0, 56.5, 0.169],
+                    [192, 0, 59.0, 0.157], [204, 0, 61.0, 0.144], [216, 0, 62.0, 0.140]
                 ],
                 head: [
-                    // --- WHO Standards 0-36m ---
                     [0, 1, 34.54, 0.0374], [1, 1, 37.28, 0.0354], [2, 1, 39.11, 0.0335],
                     [3, 1, 40.52, 0.0321], [4, 1, 41.65, 0.0310], [6, 1, 43.32, 0.0296],
                     [9, 1, 44.97, 0.0285], [12, 1, 46.06, 0.0280], [15, 1, 46.85, 0.0277],
                     [18, 1, 47.45, 0.0275], [21, 1, 47.93, 0.0273], [24, 1, 48.31, 0.0272],
                     [30, 1, 48.92, 0.0271], [36, 1, 49.52, 0.0272],
-
-                    // --- Taiwan CDC 3y+ ---
                     [48, 1, 50.2, 0.027], [60, 1, 49.7, 0.027]
                 ]
             },
             girl: {
                 height: [
-                    // --- WHO Standards 0-24m (Length) ---
                     [0, 1, 49.14, 0.0379], [1, 1, 53.68, 0.0360], [2, 1, 57.06, 0.0351],
                     [3, 1, 59.80, 0.0345], [4, 1, 62.08, 0.0340], [6, 1, 65.73, 0.0336],
                     [9, 1, 70.13, 0.0333], [12, 1, 74.02, 0.0330], [15, 1, 77.49, 0.0328],
                     [18, 1, 80.70, 0.0326], [21, 1, 83.65, 0.0326], [24, 1, 86.40, 0.0325],
-                    
-                    // --- WHO Standards 25-36m (Height) ---
                     [25, 1, 86.58, 0.0410], [30, 1, 90.69, 0.0406], [36, 1, 95.12, 0.0401],
-                    
-                    // --- Taiwan CDC 3y+ (Height) ---
-                    [48, 1, 102.7, 0.042],
-                    [60, 1, 109.4, 0.044],
-                    [72, 1, 114.8, 0.044], // 6歲
-                    [84, 1, 120.3, 0.043],
-                    [96, 1, 125.8, 0.045],
-                    [108, 1, 131.3, 0.049],
-                    [120, 1, 137.5, 0.051], // 10歲
-                    [132, 1, 144.5, 0.047],
-                    [144, 1, 150.5, 0.040],
-                    [156, 1, 154.5, 0.035],
-                    [168, 1, 156.8, 0.035], // 14歲
-                    [180, 1, 157.9, 0.035],
-                    [192, 1, 158.7, 0.034],
-                    [204, 1, 159.3, 0.032], // 17歲
-                    [216, 1, 159.5, 0.032]  // 18歲 (延伸推估)
+                    [48, 1, 102.7, 0.042], [60, 1, 109.4, 0.044], [72, 1, 114.8, 0.044],
+                    [84, 1, 120.3, 0.043], [96, 1, 125.8, 0.045], [108, 1, 131.3, 0.049],
+                    [120, 1, 137.5, 0.051], [132, 1, 144.5, 0.047], [144, 1, 150.5, 0.040],
+                    [156, 1, 154.5, 0.035], [168, 1, 156.8, 0.035], [180, 1, 157.9, 0.035],
+                    [192, 1, 158.7, 0.034], [204, 1, 159.3, 0.032], [216, 1, 159.5, 0.032]
                 ],
                 weight: [
-                    // --- WHO Standards 0-36m ---
                     [0, 0.3809, 3.232, 0.141], [1, 0.2520, 4.18, 0.1265], [2, 0.1706, 5.13, 0.1197],
                     [3, 0.1191, 5.84, 0.1166], [4, 0.0827, 6.42, 0.1147], [6, 0.0322, 7.29, 0.1129],
                     [9, -0.019, 8.21, 0.1118], [12, -0.052, 8.95, 0.1115], [15, -0.073, 9.60, 0.1118],
                     [18, -0.086, 10.20, 0.1127], [21, -0.093, 10.85, 0.1141], [24, -0.097, 11.48, 0.1160],
                     [30, -0.103, 12.68, 0.1205], [36, -0.104, 13.85, 0.1250],
-
-                    // --- Taiwan CDC 3y+ ---
-                    [48, 0, 16.1, 0.144],
-                    [60, 0, 18.2, 0.156],
-                    [72, 0, 20.5, 0.177], // 6歲
-                    [84, 0, 22.8, 0.195],
-                    [96, 0, 25.4, 0.211],
-                    [108, 0, 28.2, 0.222],
-                    [120, 0, 31.8, 0.211], // 10歲
-                    [132, 0, 36.9, 0.189],
-                    [144, 0, 41.7, 0.173],
-                    [156, 0, 45.4, 0.159],
-                    [168, 0, 48.1, 0.151], // 14歲
-                    [180, 0, 49.6, 0.148],
-                    [192, 0, 50.5, 0.144],
-                    [204, 0, 51.0, 0.143], // 17歲
-                    [216, 0, 51.5, 0.143]  // 18歲 (延伸推估)
+                    [48, 0, 16.1, 0.144], [60, 0, 18.2, 0.156], [72, 0, 20.5, 0.177],
+                    [84, 0, 22.8, 0.195], [96, 0, 25.4, 0.211], [108, 0, 28.2, 0.222],
+                    [120, 0, 31.8, 0.211], [132, 0, 36.9, 0.189], [144, 0, 41.7, 0.173],
+                    [156, 0, 45.4, 0.159], [168, 0, 48.1, 0.151], [180, 0, 49.6, 0.148],
+                    [192, 0, 50.5, 0.144], [204, 0, 51.0, 0.143], [216, 0, 51.5, 0.143]
                 ],
                 head: [
-                    // --- WHO Standards 0-36m ---
                     [0, 1, 33.91, 0.0347], [1, 1, 36.46, 0.0334], [2, 1, 38.31, 0.0321],
                     [3, 1, 39.56, 0.0310], [4, 1, 40.64, 0.0302], [6, 1, 42.22, 0.0290],
                     [9, 1, 43.83, 0.0280], [12, 1, 44.93, 0.0276], [15, 1, 45.72, 0.0273],
                     [18, 1, 46.33, 0.0272], [21, 1, 46.82, 0.0271], [24, 1, 47.22, 0.0271],
                     [30, 1, 47.88, 0.0273], [36, 1, 48.51, 0.0277],
-
-                    // --- Taiwan CDC 3y+ ---
                     [48, 1, 49.3, 0.027], [60, 1, 49.7, 0.027]
                 ]
             }
@@ -781,7 +841,7 @@
             ]}
         ];
 
-        // Refined Games with Tags (BoardSheep Style + User Requested)
+        // Refined Games with Tags
         const GAMES_LIBRARY = [
             { ageMin: 0, ageMax: 2, list: [
                 { title: "疊疊杯", tags: ["手眼協調"] }, { title: "軟積木", tags: ["觸覺"] }, { title: "形狀配對盒", tags: ["認知","精細動作"] },
@@ -1027,8 +1087,8 @@
 
         // Teeth Data (Symmetric layout)
         const TEETH_LAYOUT = {
-            primary: [ { type: 'incisor', angle: 10, erupt: [6,12], shed: [72,84] }, { type: 'incisor', angle: 25, erupt: [9,16], shed: [84,96] }, { type: 'canine', angle: 45, erupt: [16,23], shed: [108,144] }, { type: 'molar', angle: 65, erupt: [13,19], shed: [108,132] }, { type: 'molar', angle: 85, erupt: [23,33], shed: [120,144] } ],
-            permanent: [ { type: 'incisor', angle: 8, erupt: [72,96] }, { type: 'incisor', angle: 20, erupt: [84,108] }, { type: 'canine', angle: 35, erupt: [108,144] }, { type: 'molar', angle: 50, erupt: [120,144] }, { type: 'molar', angle: 65, erupt: [120,144] }, { type: 'molar', angle: 80, erupt: [72,84] }, { type: 'molar', angle: 95, erupt: [132,156] }, { type: 'molar', angle: 110, erupt: [204,252] } ]
+            primary: [ { type: 'incisor', name: '正門牙', angle: 10, erupt: [6,12], shed: [72,84] }, { type: 'incisor', name: '側門牙', angle: 25, erupt: [9,16], shed: [84,96] }, { type: 'canine', name: '犬齒', angle: 45, erupt: [16,23], shed: [108,144] }, { type: 'molar', name: '第一臼齒', angle: 65, erupt: [13,19], shed: [108,132] }, { type: 'molar', name: '第二臼齒', angle: 85, erupt: [23,33], shed: [120,144] } ],
+            permanent: [ { type: 'incisor', name: '正門牙', angle: 8, erupt: [72,96] }, { type: 'incisor', name: '側門牙', angle: 20, erupt: [84,108] }, { type: 'canine', name: '犬齒', angle: 35, erupt: [108,144] }, { type: 'molar', name: '第一小臼齒', angle: 50, erupt: [120,144] }, { type: 'molar', name: '第二小臼齒', angle: 65, erupt: [120,144] }, { type: 'molar', name: '第一大臼齒', angle: 80, erupt: [72,84] }, { type: 'molar', name: '第二大臼齒', angle: 95, erupt: [132,156] }, { type: 'molar', name: '第三大臼齒(智齒)', angle: 110, erupt: [204,252] } ]
         };
 
         // --- CORE MATH ---
@@ -1068,7 +1128,14 @@
 
         function loadData() {
             const saved = localStorage.getItem('sheepGrowthApp');
-            if (saved) { appData = JSON.parse(saved); appData.children.forEach(c => { if(!c.records) c.records=[]; }); }
+            if (saved) { 
+                appData = JSON.parse(saved); 
+                appData.children.forEach(c => { 
+                    if(!c.records) c.records=[]; 
+                    if(!c.teethLog) c.teethLog = {}; 
+                    if(!c.vaccineLog) c.vaccineLog = {}; // Initialize Vaccine Log for older data
+                }); 
+            }
             renderChildList();
             
             const savedState = localStorage.getItem('sheepAppState');
@@ -1227,7 +1294,17 @@
             // Default theme based on gender
             const defaultTheme = gender === 'boy' ? 'ocean' : 'rose';
 
-            appData.children.push({ id: Date.now().toString(), name, gender, dob, weeks: weeks, theme: defaultTheme, records: [] });
+            appData.children.push({ 
+                id: Date.now().toString(), 
+                name, 
+                gender, 
+                dob, 
+                weeks: weeks, 
+                theme: defaultTheme, 
+                records: [],
+                teethLog: {},
+                vaccineLog: {} // Init vaccine log
+            });
             saveData(); closeModal('addChildModal'); document.getElementById('addChildForm').reset(); renderChildList();
         }
 
@@ -1382,39 +1459,124 @@
             });
         }
 
+        // --- NEW: VACCINE LOGIC WITH INPUT ---
         function renderVaccines(ageMonths, dob) { // Input: Chronological Age, DOB
+            const child = appData.children.find(c => c.id === currentChildId);
             const container = document.getElementById('vaccineListContainer');
             container.innerHTML = '';
             const dobDate = moment(dob);
             
+            // Generate unique IDs for vaccines based on index since array is static
+            const vaccinesWithId = DATA_VACCINES.map((v, i) => ({...v, id: `vac_${i}`}));
+            
             const grouped = {};
-            DATA_VACCINES.forEach(v => { if(!grouped[v.ageMo]) grouped[v.ageMo]=[]; grouped[v.ageMo].push(v.name); });
+            vaccinesWithId.forEach(v => { if(!grouped[v.ageMo]) grouped[v.ageMo]=[]; grouped[v.ageMo].push(v); });
             const ages = Object.keys(grouped).map(Number).sort((a,b)=>a-b);
 
             ages.forEach(ageMo => {
-                const names = grouped[ageMo];
+                const items = grouped[ageMo];
                 const dueDate = dobDate.clone().add(ageMo, 'months');
                 const diffMonths = ageMonths - ageMo;
                 
-                let sClass="border-gray-200 bg-gray-50", sIcon="circle", sColor="text-gray-300", sText="";
-
-                if (diffMonths >= 1) { 
-                    sClass="border-green-100 bg-green-50"; sIcon="check-circle"; sColor="text-green-600"; sText="應已施打";
-                } else if (diffMonths >= -1 && diffMonths < 1) { 
-                    sClass="border-yellow-100 bg-yellow-50"; sIcon="clock"; sColor="text-yellow-500"; sText="近期留意";
-                } else { 
-                    sClass="border-blue-100 bg-blue-50"; sIcon="calendar-alt"; sColor="text-blue-500"; sText="預計 "+dueDate.format('YYYY/MM');
-                }
-
                 const ageLabel = ageMo === 0 ? '出生24h內' : (ageMo >= 12 ? `${Math.floor(ageMo/12)}歲${ageMo%12?ageMo%12+'個月':''}` : `${ageMo}個月`);
-                const namesHtml = names.map(n => `<div class="mb-1 text-sm font-bold text-gray-700 flex items-start gap-2"><span class="text-gray-400 mt-1 text-[10px]">●</span><span>${n}</span></div>`).join('');
+                
+                let groupHtml = `<div class="p-4 rounded-xl border shadow-sm bg-white mb-3">`;
+                groupHtml += `<div class="text-xs text-gray-500 mb-2 font-mono bg-gray-50 inline-block px-2 py-0.5 rounded border border-gray-200">${ageLabel}</div>`;
+                
+                items.forEach(vac => {
+                    const savedDate = child.vaccineLog && child.vaccineLog[vac.id];
+                    let sClass="", sIcon="", sColor="", sText="";
 
-                container.innerHTML += `<div class="flex justify-between items-center p-4 rounded-xl border ${sClass} shadow-sm"><div class="flex-1"><div class="text-xs text-gray-500 mb-2 font-mono bg-white inline-block px-2 py-0.5 rounded border border-gray-200">${ageLabel}</div><div class="pl-1">${namesHtml}</div></div><div class="flex flex-col items-end ml-3 min-w-[80px]"><i class="fas fa-${sIcon} ${sColor} text-2xl mb-1"></i><span class="text-xs font-bold ${sColor} text-right">${sText}</span></div></div>`;
+                    if (savedDate) {
+                        // Vaccinated
+                        sClass = "border-green-100 bg-green-50"; 
+                        sIcon = "check-circle"; 
+                        sColor = "text-green-600"; 
+                        sText = savedDate;
+                    } else {
+                        // Not Vaccinated
+                        if (diffMonths >= 1) { 
+                            // Overdue
+                            sClass = "border-yellow-100 bg-yellow-50 hover:bg-yellow-100"; 
+                            sIcon = "clock"; 
+                            sColor = "text-yellow-600"; 
+                            sText = "建議補打";
+                        } else if (diffMonths >= -1 && diffMonths < 1) { 
+                            // Current Due
+                            sClass = "border-yellow-100 bg-yellow-50 hover:bg-yellow-100"; 
+                            sIcon = "clock"; 
+                            sColor = "text-yellow-600"; 
+                            sText = "近期留意";
+                        } else { 
+                            // Future
+                            sClass = "border-blue-50 bg-white hover:bg-blue-50"; 
+                            sIcon = "calendar-alt"; 
+                            sColor = "text-blue-400"; 
+                            sText = "預計 "+dueDate.format('YYYY/MM');
+                        }
+                    }
+
+                    groupHtml += `
+                    <div class="vaccine-item flex justify-between items-center p-3 rounded-lg border ${savedDate ? 'border-green-200 bg-green-50' : 'border-gray-100'} mb-2" onclick="openVaccineModal('${vac.id}', '${vac.name}', '${savedDate || ''}')">
+                        <div class="flex-1">
+                            <div class="text-sm font-bold text-gray-700">${vac.name}</div>
+                        </div>
+                        <div class="flex flex-col items-end ml-3 min-w-[80px]">
+                            <i class="fas fa-${sIcon} ${sColor} text-xl mb-1"></i>
+                            <span class="text-xs font-bold ${sColor} text-right">${sText}</span>
+                        </div>
+                    </div>`;
+                });
+                
+                groupHtml += `</div>`;
+                container.innerHTML += groupHtml;
             });
         }
 
+        function openVaccineModal(vaccineKey, vaccineName, currentDate) {
+            document.getElementById('vaccineKey').value = vaccineKey;
+            document.getElementById('vaccineNameDisplay').innerText = vaccineName;
+            document.getElementById('vaccineDateInput').value = currentDate || moment().format('YYYY-MM-DD');
+            openModal('vaccineModal');
+        }
+
+        function saveVaccineRecord() {
+            const key = document.getElementById('vaccineKey').value;
+            const date = document.getElementById('vaccineDateInput').value;
+            
+            if (!date) { showAlert('錯誤', '請選擇施打日期'); return; }
+
+            const child = appData.children.find(c => c.id === currentChildId);
+            if (!child) return;
+            
+            if (!child.vaccineLog) child.vaccineLog = {};
+            child.vaccineLog[key] = date;
+            
+            saveData();
+            closeModal('vaccineModal');
+            
+            // Refresh List
+            const chronoMonths = moment().diff(moment(child.dob), 'months', true);
+            renderVaccines(chronoMonths, child.dob);
+        }
+
+        function deleteVaccineRecord() {
+             const key = document.getElementById('vaccineKey').value;
+             const child = appData.children.find(c => c.id === currentChildId);
+             
+             if (child && child.vaccineLog && child.vaccineLog[key]) {
+                 delete child.vaccineLog[key];
+                 saveData();
+                 const chronoMonths = moment().diff(moment(child.dob), 'months', true);
+                 renderVaccines(chronoMonths, child.dob);
+             }
+             closeModal('vaccineModal');
+        }
+
+        // --- TEETH LOGIC (Updated for Record Feature) ---
         function renderTeeth(ageMonths) { // Input: Corrected Age
             document.getElementById('teethAgeDisplay').innerText = (ageMonths/12).toFixed(1) + " 歲";
+            const child = appData.children.find(c => c.id === currentChildId);
             
             ['upper', 'lower'].forEach(pos => {
                 const container = document.getElementById('jaw' + (pos === 'upper' ? 'Upper' : 'Lower'));
@@ -1429,8 +1591,8 @@
                 const rPrimaryX = 70; const rPrimaryY = 60;
                 const anchorY_actual = pos === 'upper' ? 130 : 30;
 
-                TEETH_LAYOUT.permanent.forEach(t => renderToothPair(container, t, ageMonths, centerX, anchorY_actual, pos, rPermX, rPermY, 'permanent'));
-                TEETH_LAYOUT.primary.forEach(t => renderToothPair(container, t, ageMonths, centerX, anchorY_actual, pos, rPrimaryX, rPrimaryY, 'primary'));
+                TEETH_LAYOUT.permanent.forEach((t, idx) => renderToothPair(container, t, idx, ageMonths, centerX, anchorY_actual, pos, rPermX, rPermY, 'permanent', child.teethLog));
+                TEETH_LAYOUT.primary.forEach((t, idx) => renderToothPair(container, t, idx, ageMonths, centerX, anchorY_actual, pos, rPrimaryX, rPrimaryY, 'primary', child.teethLog));
             });
 
             let text = "恆牙列期，28-32顆牙齒逐漸長齊。";
@@ -1441,7 +1603,7 @@
             document.getElementById('teethStageText').innerText = text;
         }
 
-        function renderToothPair(container, data, age, cx, anchorY, jawPos, rx, ry, type) {
+        function renderToothPair(container, data, index, age, cx, anchorY, jawPos, rx, ry, type, teethLog) {
             const rad = data.angle * (Math.PI / 180);
             const dx = Math.sin(rad) * rx;
             const dy = Math.cos(rad) * ry;
@@ -1457,35 +1619,124 @@
                 rotR = 180 - data.angle;
             }
 
-            let status = 'shed';
-            let isErupted = age >= data.erupt[0];
-            let isShed = false;
-            if (data.shed) isShed = age >= data.shed[0];
-
-            if (type === 'primary') {
-                if (isShed) status = 'shed';
-                else if (isErupted) status = 'erupted';
-                else status = 'shed'; 
-            } else {
-                if (isErupted) status = 'erupted';
-                else status = 'shed'; 
-            }
-
             [-1, 1].forEach(side => {
+                // Generate Unique Tooth ID: primary_upper_incisor_0_L
+                const sideChar = side === -1 ? 'L' : 'R';
+                const toothId = `${type}_${jawPos}_${index}_${sideChar}`;
+                const log = teethLog && teethLog[toothId];
+                
+                // Determine Status Priority: Log > Age Estimation
+                let status = 'shed';
+                let isRecorded = false;
+
+                if (log && log.eruptDate) {
+                    // Manual Record Exists
+                    isRecorded = true;
+                    status = 'erupted'; // Default to erupted if record exists
+                    
+                    // Check if shed date exists and is passed (simulated logic, mostly just display state)
+                    if (log.shedDate) status = 'shed';
+                } else {
+                    // Fallback to Age Estimation
+                    let isErupted = age >= data.erupt[0];
+                    let isShed = false;
+                    if (data.shed) isShed = age >= data.shed[0];
+
+                    if (type === 'primary') {
+                        if (isShed) status = 'shed';
+                        else if (isErupted) status = 'erupted';
+                        else status = 'shed'; // Not erupted yet (hidden/shed style)
+                    } else {
+                        if (isErupted) status = 'erupted';
+                        else status = 'shed'; 
+                    }
+                }
+
                 const el = document.createElement('div');
                 el.className = `tooth-container`;
-                el.style.left = `${(cx + (side * dx)) - 12}px`; 
-                el.style.top = `${y - 20}px`; 
-                
+                el.style.left = `${(cx + (side * dx)) - 15}px`; 
+                el.style.top = `${y - 22}px`; 
                 const rotation = side === -1 ? rotL : rotR;
                 el.style.transform = `rotate(${rotation}deg)`;
+                
+                // Click Event for Modal
+                el.onclick = () => openToothModal(toothId, type, data.name, sideChar, jawPos);
 
                 const mark = document.createElement('div');
-                mark.className = `tooth-mark ${type} ${status} ${data.type}`;
+                mark.className = `tooth-mark ${type} ${status} ${data.type} ${isRecorded ? 'recorded' : ''}`;
                 
+                if(isRecorded) {
+                    const badge = document.createElement('div');
+                    badge.className = 'tooth-badge';
+                    badge.innerHTML = '<i class="fas fa-check"></i>';
+                    mark.appendChild(badge);
+                }
+
                 el.appendChild(mark);
                 container.appendChild(el);
             });
+        }
+
+        // --- NEW: TOOTH MODAL LOGIC ---
+        function openToothModal(toothId, type, name, side, jaw) {
+            const jawText = jaw === 'upper' ? '上排' : '下排';
+            const sideText = side === 'L' ? '左側' : '右側';
+            const typeText = type === 'primary' ? '乳牙' : '恆牙';
+            
+            document.getElementById('toothModalTitle').innerText = `${typeText}紀錄`;
+            document.getElementById('toothNameDisplay').innerText = `${jawText} ${sideText} - ${name}`;
+            document.getElementById('toothId').value = toothId;
+            
+            // Logic: Permanent teeth rarely shed in childhood context (except accidents), hide shed input for UX
+            if (type === 'permanent') {
+                document.getElementById('toothShedContainer').classList.add('hidden');
+            } else {
+                document.getElementById('toothShedContainer').classList.remove('hidden');
+            }
+
+            // Load Existing Data
+            const child = appData.children.find(c => c.id === currentChildId);
+            const log = child.teethLog ? child.teethLog[toothId] : null;
+            
+            document.getElementById('toothEruptDate').value = log ? log.eruptDate : '';
+            document.getElementById('toothShedDate').value = log ? log.shedDate : '';
+
+            openModal('toothModal');
+        }
+
+        function saveToothRecord() {
+            const toothId = document.getElementById('toothId').value;
+            const eruptDate = document.getElementById('toothEruptDate').value;
+            const shedDate = document.getElementById('toothShedDate').value;
+            
+            const child = appData.children.find(c => c.id === currentChildId);
+            if (!child) return;
+
+            if (!child.teethLog) child.teethLog = {};
+
+            if (eruptDate || shedDate) {
+                child.teethLog[toothId] = { eruptDate, shedDate };
+                saveData();
+                closeModal('toothModal');
+                
+                const ageInfo = getEvaluatedAge(child, moment());
+                renderTeeth(ageInfo.months); // Re-render visual
+            } else {
+                // If both empty, maybe treat as delete? Or just close.
+                closeModal('toothModal');
+            }
+        }
+
+        function deleteToothRecord() {
+            const toothId = document.getElementById('toothId').value;
+            const child = appData.children.find(c => c.id === currentChildId);
+            if (child && child.teethLog && child.teethLog[toothId]) {
+                delete child.teethLog[toothId];
+                saveData();
+                const ageInfo = getEvaluatedAge(child, moment());
+                renderTeeth(ageInfo.months);
+            }
+            closeModal('toothModal');
         }
 
         function renderRecommendations(ageYears) { // Input: Corrected Age
